@@ -28,8 +28,8 @@
 
   <text x="80" y="170" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="96" font-weight="800" fill="#ffffff" letter-spacing="2">EMYDPI</text>
   <rect x="84" y="192" width="180" height="6" rx="3" fill="url(#accent)"/>
-  <text x="80" y="250" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="34" font-weight="600" fill="#e6e8ff">Türkiye'de Discord'a tek tıkla erişim</text>
-  <text x="80" y="292" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="22" fill="#9aa0c8">Sadece Discord trafiği · Diğer sitelere ve DNS ayarlarına dokunmaz</text>
+  <text x="80" y="250" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="32" font-weight="600" fill="#e6e8ff">Türkiye'de Discord ve Roblox'a tek tıkla erişim</text>
+  <text x="80" y="292" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="22" fill="#9aa0c8">Sadece seçtiğin servisler · Diğer sitelere ve DNS ayarlarına dokunmaz</text>
 
   <g font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="18" font-weight="600">
     <rect x="80" y="320" width="170" height="40" rx="20" fill="#ffffff" fill-opacity="0.08" stroke="#5865f2" stroke-opacity="0.6"/>

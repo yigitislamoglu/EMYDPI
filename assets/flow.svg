@@ -16,12 +16,12 @@
     <text x="40" y="52" font-size="24" font-weight="700" fill="#ffffff">EMYDPI olmadan</text>
     <!-- without -->
     <rect x="40" y="76" width="170" height="70" rx="12" fill="#23263a" stroke="#3a3e5c"/>
-    <text x="125" y="118" text-anchor="middle" font-size="20" font-weight="600" fill="#e6e8ff">Discord</text>
+    <text x="125" y="118" text-anchor="middle" font-size="18" font-weight="600" fill="#e6e8ff">Discord · Roblox</text>
     <line x1="210" y1="111" x2="470" y2="111" stroke="#ed4245" stroke-width="3" marker-end="url(#arrRed)"/>
-    <text x="340" y="98" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#9aa0c8">SNI: discord.com</text>
+    <text x="340" y="98" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#9aa0c8">SNI: discord.com / roblox.com</text>
     <rect x="480" y="66" width="200" height="90" rx="12" fill="#3a1d22" stroke="#ed4245"/>
     <text x="580" y="106" text-anchor="middle" font-size="20" font-weight="700" fill="#ff8a8c">Operatör DPI</text>
-    <text x="580" y="134" text-anchor="middle" font-size="16" fill="#ffb3b4">"discord.com" görüldü</text>
+    <text x="580" y="134" text-anchor="middle" font-size="16" fill="#ffb3b4">engelli alan adı görüldü</text>
     <text x="760" y="118" font-size="40" font-weight="800" fill="#ed4245">✕</text>
     <text x="810" y="118" font-size="18" fill="#ff8a8c">Bağlantı kesilir</text>
 
@@ -30,7 +30,7 @@
     <text x="40" y="236" font-size="24" font-weight="700" fill="#ffffff">EMYDPI ile</text>
     <!-- with -->
     <rect x="40" y="262" width="170" height="70" rx="12" fill="#23263a" stroke="#3a3e5c"/>
-    <text x="125" y="304" text-anchor="middle" font-size="20" font-weight="600" fill="#e6e8ff">Discord</text>
+    <text x="125" y="304" text-anchor="middle" font-size="18" font-weight="600" fill="#e6e8ff">Discord · Roblox</text>
 
     <line x1="210" y1="297" x2="276" y2="297" stroke="#9aa0c8" stroke-width="3" marker-end="url(#arr)"/>
     <rect x="284" y="250" width="250" height="94" rx="12" fill="#1f2347" stroke="#5865f2" stroke-width="2"/>
@@ -58,7 +58,7 @@
     <text x="830" y="320" text-anchor="middle" font-size="16" fill="#b5ecc4">alan adını göremez</text>
     <line x1="930" y1="297" x2="982" y2="297" stroke="#3ba55d" stroke-width="3" marker-end="url(#arrGreen)"/>
     <rect x="990" y="262" width="170" height="70" rx="12" fill="#23263a" stroke="#3ba55d"/>
-    <text x="1075" y="294" text-anchor="middle" font-size="18" font-weight="600" fill="#e6e8ff">Discord</text>
+    <text x="1075" y="294" text-anchor="middle" font-size="17" font-weight="600" fill="#e6e8ff">Discord · Roblox</text>
     <text x="1075" y="316" text-anchor="middle" font-size="15" fill="#7fd99a">sunucusu ✓</text>
 
     <text x="600" y="500" text-anchor="middle" font-size="15" fill="#7c82a8">Şifreli trafik çözülmez veya değiştirilmez · Diğer tüm trafik normal yolundan gider</text>
