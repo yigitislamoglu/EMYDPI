@@ -1,5 +1,23 @@
 # Değişiklik Günlüğü
 
+## [1.2.0] - 2026-11-07
+
+### Yeni
+- 🌐 **Otomatik mod (varsayılan):** 4 atlatma yöntemi (`tlsrec`, `multi`, `recfrag`, `frag`). Bir yöntem cevap
+  almazsa bağlantı sıradaki yöntemle tekrar denenir; işe yarayan kaydedilir ve sonraki açılışlarda doğrudan
+  kullanılır. Farklı operatörlerin farklı DPI cihazlarına uyum için.
+- 🧹 **Çakışan program kontrolü:** Kurulum GoodbyeDPI, zapret, DPIscord, SpoofDPI, ByeDPI, GreenTunnel, PowerTunnel
+  ve WinDivert sürücülerini tespit eder, uyarır ve onay verilirse durdurur. Durum ekranında da uyarı gösterilir.
+- `hosts` içinde başka araçlardan kalmış Discord/Roblox satırları temizlenir.
+- Ön kontroller: Windows sürümü, PowerShell kısıtlaması, 443 portu.
+- `[6] Yöntem seç`: gelişmiş kullanıcılar için yöntemi elle sabitleme.
+
+### Değişenler
+- Şifreli DNS 6 sunucuya çıkarıldı (Cloudflare, Google, AdGuard) ve RFC 8484 standart formatına geçildi.
+  3 saniye zaman aşımı; hepsi erişilemezse son bilinen IP kullanılır.
+- Sunucunun birden fazla IP'si varsa yeniden denemede farklı IP kullanılır.
+- `frag` yöntemi artık sadece alan adı bitene kadar parçalar (eskisinden çok daha hızlı).
+
 ## [1.1.0] - 2026-11-07
 
 ### Yeni
@@ -26,5 +44,6 @@
 - Tek menülü `.bat`: kur, kaldır, başlat, durdur, log.
 - Antivirüs `hosts` dosyasını koruyorsa anlaşılır hata mesajı verir; `hosts` zaten doğruysa dosyaya dokunmaz.
 
+[1.2.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.2.0
 [1.1.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.1.0
 [1.0.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.0.0

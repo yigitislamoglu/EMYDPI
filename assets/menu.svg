@@ -2,12 +2,12 @@
   <rect width="820" height="610" rx="12" fill="#0c0c0c"/>
   <rect width="820" height="40" rx="12" fill="#1f1f1f"/>
   <rect y="28" width="820" height="12" fill="#1f1f1f"/>
-  <text x="20" y="26" font-family="'Segoe UI', Arial, sans-serif" font-size="14" fill="#cccccc">Yönetici: EMYDPI v1.1.0 - Discord + Roblox</text>
+  <text x="20" y="26" font-family="'Segoe UI', Arial, sans-serif" font-size="14" fill="#cccccc">Yönetici: EMYDPI v1.2.0 - Discord + Roblox</text>
   <g fill="#cccccc" font-size="14"><text x="740" y="26">—</text><text x="768" y="26">☐</text><text x="796" y="26">✕</text></g>
 
   <g font-family="Consolas, 'Cascadia Mono', 'Courier New', monospace" font-size="16" fill="#cccccc" xml:space="preserve" style="white-space:pre">
     <text x="20" y="74">==================================================</text>
-    <text x="20" y="96">         EMYDPI v1.1.0 - Discord + Roblox</text>
+    <text x="20" y="96">         EMYDPI v1.2.0 - Discord + Roblox</text>
     <text x="20" y="118">  Sadece secilen servislerin trafigini DPI'dan</text>
     <text x="20" y="140">  gecirir. Diger site ve DNS ayarlarina dokunmaz.</text>
     <text x="20" y="162">  github.com/yigitislamoglu/EMYDPI</text>
@@ -21,7 +21,7 @@
     <text x="20" y="382">  [3] Proxy'yi baslat (Discord'u da yeniden baslatir)</text>
     <text x="20" y="404">  [4] Proxy'yi durdur</text>
     <text x="20" y="426">  [5] Log goster</text>
-    <text x="20" y="448">  [6] Yedek mod ile kur (1 calismazsa dene)</text>
+    <text x="20" y="448">  [6] Yontem sec      (gelismis, normalde gerekmez)</text>
     <text x="20" y="470">  [7] Servis sec      (Discord / Roblox / ikisi)</text>
     <text x="20" y="492">  [0] Cikis</text>
     <text x="20" y="536">Seciminiz: <tspan fill="#ffffff">1</tspan><tspan fill="#ffffff">█</tspan></text>

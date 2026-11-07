@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set "VER=1.1.0"
+set "VER=1.2.0"
 title EMYDPI v%VER% - Discord + Roblox
 cd /d "%~dp0"
 
@@ -30,7 +30,7 @@ echo   [2] Tamamen kaldir
 echo   [3] Proxy'yi baslat (Discord'u da yeniden baslatir)
 echo   [4] Proxy'yi durdur
 echo   [5] Log goster
-echo   [6] Yedek mod ile kur (1 calismazsa dene)
+echo   [6] Yontem sec      (gelismis, normalde gerekmez)
 echo   [7] Servis sec      (Discord / Roblox / ikisi)
 echo   [0] Cikis
 echo.
@@ -42,7 +42,7 @@ if "%secim%"=="2" ( %PS% -Action uninstall & pause & goto menu )
 if "%secim%"=="3" ( %PS% -Action start     & pause & goto menu )
 if "%secim%"=="4" ( %PS% -Action stop      & pause & goto menu )
 if "%secim%"=="5" ( %PS% -Action log       & pause & goto menu )
-if "%secim%"=="6" ( %PS% -Action install -Mode frag & pause & goto menu )
+if "%secim%"=="6" goto yontem
 if "%secim%"=="7" goto servis
 if "%secim%"=="0" exit /b
 goto menu
@@ -60,4 +60,24 @@ set /p "sv=Seciminiz: "
 if "%sv%"=="1" ( %PS% -Action install -Services "Discord,Roblox" & pause & goto menu )
 if "%sv%"=="2" ( %PS% -Action install -Services "Discord"        & pause & goto menu )
 if "%sv%"=="3" ( %PS% -Action install -Services "Roblox"         & pause & goto menu )
+goto menu
+
+:yontem
+echo.
+echo   Otomatik mod internet saglayiciniza uyan yontemi kendisi bulur.
+echo   Elle secmek sadece sorun giderme icindir.
+echo   [1] Otomatik        (onerilen)
+echo   [2] tlsrec          (en hizli)
+echo   [3] multi
+echo   [4] recfrag
+echo   [5] frag            (en yavas)
+echo   [0] Geri
+echo.
+set "ym="
+set /p "ym=Seciminiz: "
+if "%ym%"=="1" ( %PS% -Action install -Mode auto    & pause & goto menu )
+if "%ym%"=="2" ( %PS% -Action install -Mode tlsrec  & pause & goto menu )
+if "%ym%"=="3" ( %PS% -Action install -Mode multi   & pause & goto menu )
+if "%ym%"=="4" ( %PS% -Action install -Mode recfrag & pause & goto menu )
+if "%ym%"=="5" ( %PS% -Action install -Mode frag    & pause & goto menu )
 goto menu

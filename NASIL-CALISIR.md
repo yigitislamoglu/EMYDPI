@@ -59,9 +59,46 @@ TLS standardı (RFC 8446) bir el sıkışma mesajının birden fazla kayda böl�
 Roblox sunucuları iki parçayı sorunsuz birleştirir ve bağlantı normal şekilde kurulur. DPI cihazı ise iki parçanın
 hiçbirinde tam adı göremez.
 
-Bu yöntem testlerde **~250 ms**'de bağlantı kurdu. Bu, normal bir bağlantıyla aynı süre. Daha yavaş ama daha
-saldırgan bir alternatif olan **yedek mod** (`[6]`), paketi 2 baytlık parçalara böler. Operatör bir gün
-yöntemini değiştirirse bu mod kullanılabilir.
+Bu yöntem testlerde **~250 ms**'de bağlantı kurdu. Bu, normal bir bağlantıyla aynı süre.
+
+### Farklı operatörler: otomatik mod
+
+Her operatör farklı bir DPI cihazı kullanabilir. Bazıları sadece ilk paketi okur, bazıları TLS kayıtlarını
+birleştirip okur, bazıları TCP paketlerini de birleştirir. Bu yüzden EMYDPI'de 4 yöntem vardır:
+
+| Yöntem | Paket nasıl gönderilir | Hangi DPI'ya karşı |
+|---|---|---|
+| `tlsrec` | 2 TLS kaydı: `…d` + `iscord.com…` | Sadece tek kaydı okuyan DPI |
+| `multi` | Alan adı 3'er harflik kayıtlara: `…d` `isc` `ord` `.co` `m` `…` | İki kaydı birleştirebilen DPI |
+| `recfrag` | `tlsrec` + alan adı bölümü 1 baytlık TCP paketleri | TLS kayıtlarını birleştiren ama TCP'yi birleştirmeyen DPI |
+| `frag` | Paketin başı 2 baytlık TCP parçaları | Sadece ilk TCP paketine bakan DPI |
+
+**Otomatik mod** (varsayılan) şöyle çalışır:
+
+1. Proxy önce daha önce işe yaramış yöntemi dener (ilk kurulumda `tlsrec`).
+2. Sunucudan 4 saniye içinde cevap gelmezse veya bağlantı kesilirse aynı ClientHello'yu **yeni bir bağlantıda bir
+   sonraki yöntemle** tekrar gönderir. Uygulamaya henüz hiçbir şey gönderilmediği için bu güvenlidir; Discord veya
+   Roblox sadece biraz daha uzun bekler.
+3. İşe yarayan yöntem `emydpi-strategy.txt` dosyasına kaydedilir. Sonraki bağlantılar ve bilgisayar açılışları
+   doğrudan onu kullanır, yani bekleme sadece **ilk seferde bir kez** olur.
+4. Operatör ileride yöntemini değiştirirse aynı süreç tekrarlanır ve yeni yöntem öğrenilir.
+
+Testte ilk yöntemi bilerek engelli bir yönteme ayarladık: ilk bağlantı 4,7 saniyede kuruldu, `tlsrec` öğrenildi ve
+sonraki bağlantılar yine ~0,3 saniyede kuruldu.
+
+Şifreli DNS de aynı mantıkla yedeklidir: Cloudflare (`1.1.1.1`, `1.0.0.1`), Google (`8.8.8.8`, `8.8.4.4`) ve
+AdGuard (`94.140.14.140`, `94.140.14.141`). Biri cevap vermezse sıradakine geçilir. Hepsi aynı anda erişilemezse
+son bilinen IP kullanılır.
+
+### Neden diğer DPI araçlarıyla birlikte çalışmaz?
+
+GoodbyeDPI ve zapret, WinDivert sürücüsüyle ağ kartından geçen paketleri yakalayıp değiştirir. EMYDPI'nin bölüp
+gönderdiği paketler de o sürücüden geçer ve ikinci kez değiştirilir. Sonuç bozuk paketler ve kopan bağlantılardır.
+Başka araçların `hosts` dosyasına eklediği Discord satırları da EMYDPI'nin yönlendirmesini ezer.
+
+Bu yüzden `[1] Kur / Onar` kurulumdan önce GoodbyeDPI, zapret (`winws`), DPIscord, SpoofDPI, ByeDPI, GreenTunnel,
+PowerTunnel ve çalışan WinDivert sürücülerini arar. Bulursa uyarır ve onay verirsen durdurup otomatik başlamalarını
+kapatır. `hosts` içindeki eski Discord/Roblox satırlarını da temizler (önce yedek alınır).
 
 ### Neden hosts + yerel proxy?
 
@@ -87,9 +124,10 @@ Discord açılıp `gateway.discord.gg` adresine bağlanmak istediğinde:
 3. Discord       127.0.0.1:443'e bağlanır, ClientHello gönderir
 4. EMYDPI proxy  ClientHello'yu okur, SNI = "gateway.discord.gg"
 5. EMYDPI proxy  Gerçek IP'yi sorar → https://1.1.1.1/dns-query (şifreli DNS)
-                 → 162.159.130.234  (10 dakika önbellekte tutulur)
+                 → 162.159.130.234  (DNS kaydının süresi kadar önbellekte tutulur)
 6. EMYDPI proxy  162.159.130.234:443'e bağlanır
-7. EMYDPI proxy  ClientHello'yu ikiye bölüp gönderir  ← DPI'nin atlatıldığı an
+7. EMYDPI proxy  ClientHello'yu öğrenilmiş yöntemle bölüp gönderir  ← DPI'nin atlatıldığı an
+                 (cevap gelmezse sıradaki yöntemle tekrar dener)
 8. Sonrası       Proxy iki taraf arasında baytları olduğu gibi aktarır.
                  Şifreli trafiği çözemez, okumaz, değiştirmez.
 ```
@@ -97,10 +135,10 @@ Discord açılıp `gateway.discord.gg` adresine bağlanmak istediğinde:
 Proxy logunda (`[5] Log göster`) bu şöyle görünür:
 
 ```
-14:32:31 EMYDPI proxy calisiyor: 127.0.0.1:443 mod=tlsrec
-14:32:34 updates.discord.com -> 162.159.136.232
-14:32:35 gateway.discord.gg -> 162.159.130.234
-14:32:37 cdn.discordapp.com -> 162.159.135.233
+14:32:31 EMYDPI proxy calisiyor: 127.0.0.1:443 mod=auto (ogrenilen yontem: tlsrec)
+14:32:34 updates.discord.com -> 162.159.136.232 [tlsrec]
+14:32:35 gateway.discord.gg -> 162.159.130.234 [tlsrec]
+14:32:37 cdn.discordapp.com -> 162.159.135.233 [tlsrec]
 ```
 
 > **Neden sertifika hatası olmuyor?** Proxy TLS'i sonlandırmaz, yani araya girip kendi sertifikasını sunmaz.
@@ -111,6 +149,8 @@ Proxy logunda (`[5] Log göster`) bu şöyle görünür:
 
 `[1] Kur / Onar` sırasıyla şunları yapar:
 
+0. **Ön kontroller:** Windows sürümü (10 1809+ / 11), PowerShell kısıtlaması, çakışan DPI programları
+   (GoodbyeDPI, zapret vb.) ve 443 portunun boş olup olmadığı kontrol edilir. Sorun varsa Türkçe açıklamayla durur.
 1. **hosts dosyası:** İlk değişiklikten önce yedek alınır (`hosts.emydpi.bak`). Ardından şu blok eklenir:
    ```
    # >>> EMYDPI BASLANGIC (otomatik - elle duzenlemeyin)
@@ -120,7 +160,8 @@ Proxy logunda (`[5] Log göster`) bu şöyle görünür:
    ...
    # <<< EMYDPI BITIS
    ```
-   Dosyanın geri kalanına dokunulmaz. Blok zaten doğruysa dosya hiç yazılmaz.
+   Başka araçlardan kalmış aynı alan adlarına ait satırlar silinir; dosyanın geri kalanına dokunulmaz. Blok zaten
+   doğruysa dosya hiç yazılmaz.
 2. **Zamanlanmış görev:** Görev Zamanlayıcı'ya `EMYDPI` adlı bir görev eklenir. Bu görev oturum açılışında
    çalışır, **yönetici yetkisi olmadan** normal kullanıcı olarak ve **pencere açmadan** (`conhost --headless`)
    başlar. Çökerse 1 dakika sonra kendini yeniden başlatır (en fazla 3 kez).
@@ -178,9 +219,12 @@ düzeyindedir. VPN'den farklı olarak trafik başka bir ülkedeki sunucuya gitme
 **Yapar:**
 
 - `hosts` dosyasına sadece listedeki alan adları için `127.0.0.1` satırları ekler.
-- Gerçek IP adreslerini öğrenmek için Cloudflare (`1.1.1.1`, `1.0.0.1`) ve Google (`8.8.8.8`) şifreli DNS
-  sunucularına sorgu gönderir. Sorguda sadece alan adı bulunur (ör. `discord.com`).
-- Kendi klasörüne `emydpi.log` yazar (en fazla 512 KB, sadece alan adı ve IP; içerik yok).
+- Gerçek IP adreslerini öğrenmek için Cloudflare, Google ve AdGuard şifreli DNS sunucularına sorgu gönderir.
+  Sorguda sadece alan adı bulunur (ör. `discord.com`).
+- Kendi klasörüne `emydpi.log` (en fazla 512 KB, sadece alan adı ve IP; içerik yok) ve `emydpi-strategy.txt`
+  (öğrenilen yöntemin adı) yazar.
+- Kurulumda GoodbyeDPI gibi çakışan programları **sadece sen onay verirsen** durdurur ve otomatik başlamalarını
+  kapatır. Onları silmez.
 
 **Yapmaz:**
 

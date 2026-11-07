@@ -1,8 +1,8 @@
 # EMYDPI proxy baslatici - emydpi-proxy.cs dosyasini derleyip calistirir
 param(
     [int]$Port = 443,
-    [ValidateSet('tlsrec', 'frag')]
-    [string]$Mode = 'tlsrec'
+    [ValidateSet('auto', 'tlsrec', 'multi', 'recfrag', 'frag')]
+    [string]$Mode = 'auto'
 )
 $ErrorActionPreference = 'Stop'
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path

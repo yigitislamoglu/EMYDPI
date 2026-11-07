@@ -34,8 +34,21 @@ Sadece seçtiğin servislerin trafiğini etkiler; diğer sitelere, DNS ayarları
 | 🎯 **Sadece seçtiğin servisler** | Yalnızca o servislerin alan adları yönlendirilir, geri kalan her şey normal yolundan gider. |
 | 🛡️ **Uygulamalara dokunmaz** | DLL enjekte etmez, Discord'un veya Roblox'un dosyalarını değiştirmez. Güncellemeler sorun çıkarmaz. |
 | ⚡ **Kur ve unut** | Bilgisayar her açıldığında arka planda, pencere açmadan kendiliğinden çalışır. |
+| 🌐 **Her operatöre uyum** | Türk Telekom, Superonline, Vodafone, TurkNet… Her operatörün DPI'ı farklı davranabilir. EMYDPI 4 farklı yöntemi sırayla dener, senin hattında işe yarayanı kendisi bulur ve hatırlar. |
 
 ## 🚀 Kurulum
+
+> [!CAUTION]
+> **Önce diğer DPI araçlarını tamamen kaldır!** GoodbyeDPI, zapret, DPIscord, SpoofDPI, ByeDPI, GreenTunnel,
+> PowerTunnel ve benzerleri EMYDPI ile **aynı anda çalışamaz**. İkisi birden trafiği değiştirmeye çalışır ve
+> bağlantı bozulur. Ayrıca Discord için açık bir **VPN** veya **proxy** varsa onu da kapat.
+>
+> - **GoodbyeDPI:** klasöründeki `service_remove.cmd`'yi yönetici olarak çalıştır, sonra klasörü sil.
+> - **zapret:** `service.bat` → *Remove Services*, sonra klasörü sil.
+> - **Diğerleri:** kendi kaldırma adımlarıyla kaldır, otomatik başlatmadan çıkar.
+>
+> Unutursan sorun değil: `[1] Kur / Onar` bunları **otomatik tespit eder**, seni uyarır ve istersen durdurur.
+> Başka araçların `hosts` dosyasına eklediği eski Discord/Roblox satırlarını da kendisi temizler.
 
 1. **[EMYDPI.zip](https://github.com/yigitislamoglu/EMYDPI/releases/latest/download/EMYDPI.zip)** dosyasını indir
    ve bir klasöre çıkar (örneğin `Belgeler\EMYDPI`).
@@ -59,21 +72,31 @@ Hepsi bu. Discord kendiliğinden yeniden açılır; Roblox'u da normal şekilde 
 > dakikalığına duraklat, kurulumu tekrar çalıştır, sonra antivirüsü geri aç. Bu sadece kurulum, servis değiştirme ve
 > kaldırmada gerekir.
 
-### v1.0.0'dan güncelliyorsan
+### Eski sürümden güncelliyorsan
 
-Yeni ZIP'i **aynı klasöre** çıkarıp dosyaların üzerine yaz. Sonra `EMYDPI.bat` → **`[7] Servis seç`** →
-**`[1] Discord + Roblox`** seç. (`[1] Kur / Onar` mevcut ayarını korur, yani sadece Discord kalır.)
+Yeni ZIP'i **aynı klasöre** çıkarıp dosyaların üzerine yaz, sonra `EMYDPI.bat` → **`[1] Kur / Onar`**.
+v1.0.0 kullanıyorsan ve Roblox da istiyorsan `[7] Servis seç` → `[1] Discord + Roblox` seç.
+
+### Sistem gereksinimleri
+
+| | |
+|---|---|
+| ✅ **Windows 10** (1809 ve sonrası) / **Windows 11** | Home, Pro, Education. Ek program kurmaya gerek yok. |
+| ✅ **Yönetici izni** | Sadece kurulum ve kaldırmada (hosts dosyası ve otomatik başlatma için). |
+| ❌ **Windows 7 / 8 / 8.1** | Desteklenmez. Kurulum bunu kontrol eder ve uyarır. |
+| ⚠️ **İş / okul bilgisayarı** | PowerShell yönetici tarafından kısıtlanmışsa çalışmaz. Kurulum bunu da kontrol eder. |
+| ⚠️ **443 portu boş olmalı** | XAMPP/Apache, IIS, VMware gibi 443'ü kullanan bir program açıksa kurulum seni uyarır. |
 
 ## 📋 Menü
 
 | Seçenek | Ne yapar |
 |---|---|
-| `[1] Kur / Onar` | hosts kayıtlarını ekler, proxy'yi başlatır, açılışta otomatik çalışmayı ayarlar. Mevcut servis seçimini korur; ilk kurulumda Discord + Roblox |
+| `[1] Kur / Onar` | Çakışan programları kontrol eder, hosts kayıtlarını ekler, proxy'yi otomatik modda başlatır, açılışta otomatik çalışmayı ayarlar. Mevcut servis seçimini korur; ilk kurulumda Discord + Roblox |
 | `[2] Tamamen kaldır` | Her şeyi geri alır: proxy, otomatik başlatma, hosts kayıtları |
 | `[3] Proxy'yi başlat` | Proxy'yi (yeniden) başlatır, Discord'u yeniden açar |
 | `[4] Proxy'yi durdur` | Proxy'yi durdurur (kurulum kalır) |
 | `[5] Log göster` | Son bağlantı kayıtlarını gösterir |
-| `[6] Yedek mod ile kur` | `[1]` işe yaramazsa farklı bir atlatma yöntemiyle kurar |
+| `[6] Yöntem seç` | Gelişmiş: otomatik mod yerine tek bir atlatma yöntemini sabitler (sorun giderme için, normalde gerekmez) |
 | `[7] Servis seç` | Discord + Roblox / sadece Discord / sadece Roblox |
 
 ## 🔍 Nasıl çalışıyor?
@@ -89,9 +112,20 @@ keser. Discord'da buna ek olarak DNS engeli de vardır. Bu yüzden sadece DNS'i 
 EMYDPI şöyle aşar:
 
 1. `hosts` dosyası seçilen servislerin alan adlarını bilgisayarın kendisine (`127.0.0.1`) yönlendirir.
-2. Yerel **EMYDPI proxy** bağlantıyı karşılar ve gerçek IP'yi **şifreli DNS (DoH)** ile bulur (1.1.1.1 / 8.8.8.8).
-3. TLS **ClientHello** paketini alan adının ortasından **iki ayrı TLS kaydına** böler ve ayrı paketlerle gönderir.
-   DPI alan adının tamamını göremediği için bağlantıyı kesmez.
+2. Yerel **EMYDPI proxy** bağlantıyı karşılar ve gerçek IP'yi **şifreli DNS (DoH)** ile bulur. Cloudflare,
+   Google ve AdGuard'ın 6 farklı sunucusu sırayla denenir; biri engellenirse diğerine geçilir.
+3. TLS **ClientHello** paketini alan adının ortasından bölerek gönderir. DPI alan adının tamamını göremediği için
+   bağlantıyı kesmez.
+4. **Otomatik mod:** Operatörlerin DPI cihazları farklıdır. Bir yöntem cevap almazsa proxy aynı bağlantıyı bir
+   sonraki yöntemle tekrar dener. İşe yarayanı kaydeder; sonraki bağlantılar ve bilgisayar açılışları doğrudan onu
+   kullanır. Operatörün davranışı değişirse yeniden öğrenir.
+
+| Yöntem | Ne yapar | Hız |
+|---|---|---|
+| `tlsrec` | ClientHello'yu alan adının 1. harfinden **iki TLS kaydına** böler | En hızlı |
+| `multi` | Alan adını **3'er harflik çok sayıda TLS kaydına** böler | Hızlı |
+| `recfrag` | `tlsrec` + alan adı bölümünü **1 baytlık TCP paketleriyle** gönderir | Orta |
+| `frag` | Paketin başını **2 baytlık TCP parçalarıyla** gönderir | Yavaş, son çare |
 
 Şifreli trafik **çözülmez veya değiştirilmez**; proxy sadece ilk paketi böler, gerisini olduğu gibi aktarır.
 Bu yüzden sertifika kurulumu da gerekmez.
@@ -117,6 +151,7 @@ adım adım yolculuğunu, kurulumda ve bilgisayar açılışında neler olduğun
 
 - `C:\Windows\System32\drivers\etc\hosts` dosyasına `# >>> EMYDPI` ile başlayan bir blok eklenir.
   İlk değişiklikten önce yedeği `hosts.emydpi.bak` olarak alınır.
+- EMYDPI klasörüne `emydpi.log` ve `emydpi-strategy.txt` (otomatik modun öğrendiği yöntem) yazılır.
 - Görev Zamanlayıcı'ya **EMYDPI** adlı, oturum açılışında çalışan bir görev eklenir. Bu görev yönetici yetkisiyle
   değil, normal kullanıcı olarak ve pencere açmadan çalışır.
 
@@ -192,8 +227,20 @@ Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 <details>
 <summary><b>Discord "Checking for updates…" ekranında kalıyor</b></summary>
 
-`[5] Log göster`'e bak. Satırlar görünüyorsa proxy çalışıyordur; `[6] Yedek mod ile kur`'u dene.
-Hiç satır yoksa `[3] Proxy'yi başlat`'ı dene.
+1. Menünün üstünde **"Çakışan program çalışıyor"** uyarısı var mı bak. Varsa o programı kaldır (yukarıdaki
+   Kurulum uyarısına bak) ve `[1]`'i tekrar çalıştır.
+2. `[5] Log göster`'e bak. `discord.com -> ... [tlsrec]` gibi satırlar görünüyorsa proxy çalışıyordur.
+   Hiç satır yoksa `[3] Proxy'yi başlat`'ı dene.
+3. Logda `tum yontemler denendi` yazıyorsa operatörün henüz desteklenmeyen bir yöntem kullanıyor olabilir.
+   Lütfen operatörünün adıyla birlikte bir [Issue](https://github.com/yigitislamoglu/EMYDPI/issues) aç.
+</details>
+
+<details>
+<summary><b>"EMYDPI ile ÇAKIŞAN programlar bulundu"</b></summary>
+
+GoodbyeDPI, zapret, DPIscord gibi başka bir DPI aracı (veya onun WinDivert sürücüsü) çalışıyor. Kurulum seni
+sorduğunda **E** dersen onları durdurur ve otomatik başlamalarını kapatır. Kalıcı çözüm o aracı tamamen kaldırmaktır
+(GoodbyeDPI: `service_remove.cmd`, zapret: `service.bat` → *Remove Services*).
 </details>
 
 <details>
@@ -236,8 +283,8 @@ sırasında da kısa süre duraklatman gerekir.
 ## ❓ Sık sorulan sorular
 
 **Güvenli mi?** Tüm kod açık ve birkaç yüz satır. İnternetten hiçbir dosya indirmez, hiçbir şey çalıştırmaz.
-Tek dış bağlantısı, gerçek IP adreslerini öğrenmek için Cloudflare (1.1.1.1) ve Google (8.8.8.8) şifreli DNS
-sunucularına yapılan sorgulardır. VirusTotal sonucu ve dosya özetleri için [Güvenlik](#guvenlik) bölümüne bak.
+Tek dış bağlantısı, gerçek IP adreslerini öğrenmek için Cloudflare (1.1.1.1), Google (8.8.8.8) ve AdGuard
+şifreli DNS sunucularına yapılan sorgulardır. VirusTotal sonucu ve dosya özetleri için [Güvenlik](#guvenlik) bölümüne bak.
 
 **Bilgisayarımı yavaşlatır mı?** Hayır. Boşta %0 CPU ve ~7 MB RAM kullanır. Ölçümler [Performans](#performans)
 bölümünde.
@@ -249,7 +296,12 @@ trafiği zaten proxy'den geçmez, doğrudan sunucuya gider.
 bağlantının operatör tarafından kesilmesini engeller. Roblox açısından normal bir bağlantıdan farkı yoktur.
 
 **GoodbyeDPI / zapret'ten farkı ne?** Onlar WinDivert sürücüsüyle tüm sistemin trafiğini işler. EMYDPI sürücü
-kurmaz, sadece seçilen servislerin bağlantılarına müdahale eder.
+kurmaz, sadece seçilen servislerin bağlantılarına müdahale eder. **İkisini birlikte kullanma**; EMYDPI'yi kurmadan
+önce onları kaldır.
+
+**Her operatörde çalışır mı?** EMYDPI bunun için tasarlandı: 4 farklı yöntemi sırayla dener ve hattında işe
+yarayanı kendisi seçer. Yine de operatörler engelleme yöntemlerini zamanla değiştirebilir. Bir operatörde
+çalışmazsa operatörün adıyla bir [Issue](https://github.com/yigitislamoglu/EMYDPI/issues) aç; yeni yöntem ekleyelim.
 
 **Tarayıcıdan girebilir miyim?** Evet, discord.com ve roblox.com tarayıcıdan da açılır. Açılmazsa tarayıcının
 "Güvenli DNS" (DoH) ayarını kapatıp tekrar dene; bazı tarayıcılar bu ayar açıkken `hosts` dosyasını atlayabilir.
