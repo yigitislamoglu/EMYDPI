@@ -1,14 +1,28 @@
 @echo off
 setlocal
-set "VER=1.2.0"
+set "VER=1.3.0"
 title EMYDPI v%VER% - Discord + Roblox
 cd /d "%~dp0"
+
+:: Cift tiklama: arayuz acilir.  "EMYDPI.bat konsol": eski yazi menusu.
+set "ARG="
+if /i "%~1"=="konsol" set "ARG=konsol"
 
 :: --- Yonetici yetkisi (hosts ve zamanlanmis gorev icin gerekli) ---
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Yonetici izni isteniyor...
-    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    if defined ARG (
+        powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -ArgumentList 'konsol' -Verb RunAs"
+    ) else (
+        powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    )
+    exit /b
+)
+
+if not defined ARG (
+    rem conhost --headless: arayuzun arkasinda siyah pencere kalmaz
+    start "" conhost.exe --headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0emydpi-gui.ps1"
     exit /b
 )
 

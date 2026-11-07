@@ -1,11 +1,11 @@
-# EMYDPI v1.2.0 - Discord ve Roblox icin DPI/DNS atlatma
+# EMYDPI v1.3.0 - Discord ve Roblox icin DPI/DNS atlatma
 # https://github.com/yigitislamoglu/EMYDPI  (MIT)
 # 1) hosts: secilen servislerin alan adlari -> 127.0.0.1
 # 2) emydpi-proxy: 127.0.0.1:443'te dinler, gercek IP'yi DoH ile bulur,
 #    TLS ClientHello'yu bolerek DPI'yi atlatir. Diger trafige dokunmaz.
 
 param(
-    [ValidateSet('install', 'uninstall', 'start', 'stop', 'status', 'log')]
+    [ValidateSet('install', 'uninstall', 'start', 'stop', 'status', 'statusjson', 'log')]
     [string]$Action = 'status',
     # auto: internet saglayicisina uygun bolme yontemini kendisi bulur. Digerleri tek yontemi zorlar.
     [ValidateSet('auto', 'tlsrec', 'multi', 'recfrag', 'frag')]
@@ -13,7 +13,9 @@ param(
     # Virgulle ayrilmis: Discord,Roblox. Bos birakilirsa mevcut kurulum (yoksa hepsi) kullanilir.
     [string]$Services = '',
     # Cakisan program bulunursa soru sorma (otomatik testler icin)
-    [switch]$NoPrompt
+    [switch]$NoPrompt,
+    # Cakisan programlari sormadan durdur (arayuz onay aldiktan sonra kullanir)
+    [switch]$StopConflicts
 )
 
 $ErrorActionPreference = 'Stop'
@@ -217,9 +219,11 @@ function Resolve-Conflicts {
     Write-Host '    GoodbyeDPI, zapret, DPIscord ve benzerleri EMYDPI ile ayni anda calisamaz.' -ForegroundColor Yellow
     Write-Host '    Kalici cozum: onlari tamamen KALDIRIN (GoodbyeDPI: service_remove.cmd,' -ForegroundColor Yellow
     Write-Host '    zapret: service.bat > Remove Services), sonra EMYDPI''yi [1] ile tekrar kurun.' -ForegroundColor Yellow
-    if ($NoPrompt) { return }
-    $ans = Read-Host '    Simdi durdurup otomatik baslamalarini kapatayim mi? (E/H)'
-    if ($ans -notmatch '^[EeYy]') { Write-Host '    Dokunulmadi. Baglanti sorunlari yasayabilirsiniz.' -ForegroundColor Yellow; return }
+    if (-not $StopConflicts) {
+        if ($NoPrompt) { Write-Host '    Dokunulmadi. Baglanti sorunlari yasayabilirsiniz.' -ForegroundColor Yellow; return }
+        $ans = Read-Host '    Simdi durdurup otomatik baslamalarini kapatayim mi? (E/H)'
+        if ($ans -notmatch '^[EeYy]') { Write-Host '    Dokunulmadi. Baglanti sorunlari yasayabilirsiniz.' -ForegroundColor Yellow; return }
+    }
     foreach ($x in $c) {
         try {
             switch ($x.Kind) {
@@ -330,6 +334,24 @@ switch ($Action) {
         $c = @(Get-Conflicts)
         if ($c.Count) { Write-Host ('  [!] Cakisan program calisiyor: {0}  ([1] ile durdurabilirsiniz)' -f (@($c | ForEach-Object { $_.Name } | Select-Object -Unique) -join ', ')) -ForegroundColor Red }
         if ($h -and -not $p) { Write-Host '  [!] hosts aktif ama proxy kapali: baglanti olmaz. [3] ile baslatin.' -ForegroundColor Red }
+    }
+
+    'statusjson' {
+        # arayuz (emydpi-gui.ps1) icin
+        $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+        $taskMode = ''
+        if ($task) { $mm = [regex]::Match([string]$task.Actions[0].Arguments, '-Mode (\w+)'); if ($mm.Success) { $taskMode = $mm.Groups[1].Value } }
+        $learned = ''
+        if (Test-Path $StateFile) { $learned = ([IO.File]::ReadAllText($StateFile)).Trim() }
+        [pscustomobject]@{
+            services  = @(Get-InstalledServices)
+            hosts     = [bool](Hosts-Active)
+            proxy     = [bool](Proxy-Running)
+            task      = [bool]$task
+            mode      = $taskMode
+            learned   = $learned
+            conflicts = @(@(Get-Conflicts) | ForEach-Object { $_.Name } | Select-Object -Unique)
+        } | ConvertTo-Json -Compress
     }
 
     'log' {

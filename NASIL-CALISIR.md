@@ -96,7 +96,7 @@ GoodbyeDPI ve zapret, WinDivert sürücüsüyle ağ kartından geçen paketleri 
 gönderdiği paketler de o sürücüden geçer ve ikinci kez değiştirilir. Sonuç bozuk paketler ve kopan bağlantılardır.
 Başka araçların `hosts` dosyasına eklediği Discord satırları da EMYDPI'nin yönlendirmesini ezer.
 
-Bu yüzden `[1] Kur / Onar` kurulumdan önce GoodbyeDPI, zapret (`winws`), DPIscord, SpoofDPI, ByeDPI, GreenTunnel,
+Bu yüzden `Kur / Onar` kurulumdan önce GoodbyeDPI, zapret (`winws`), DPIscord, SpoofDPI, ByeDPI, GreenTunnel,
 PowerTunnel ve çalışan WinDivert sürücülerini arar. Bulursa uyarır ve onay verirsen durdurup otomatik başlamalarını
 kapatır. `hosts` içindeki eski Discord/Roblox satırlarını da temizler (önce yedek alınır).
 
@@ -132,7 +132,7 @@ Discord açılıp `gateway.discord.gg` adresine bağlanmak istediğinde:
                  Şifreli trafiği çözemez, okumaz, değiştirmez.
 ```
 
-Proxy logunda (`[5] Log göster`) bu şöyle görünür:
+Proxy logunda (arayüzde *Gelişmiş ayarlar* → `Logu göster`) bu şöyle görünür:
 
 ```
 14:32:31 EMYDPI proxy calisiyor: 127.0.0.1:443 mod=auto (ogrenilen yontem: tlsrec)
@@ -147,7 +147,7 @@ Proxy logunda (`[5] Log göster`) bu şöyle görünür:
 
 ## 4. Kurulumda ne oluyor?
 
-`[1] Kur / Onar` sırasıyla şunları yapar:
+`Kur / Onar` sırasıyla şunları yapar:
 
 0. **Ön kontroller:** Windows sürümü (10 1809+ / 11), PowerShell kısıtlaması, çakışan DPI programları
    (GoodbyeDPI, zapret vb.) ve 443 portunun boş olup olmadığı kontrol edilir. Sorun varsa Türkçe açıklamayla durur.
@@ -170,7 +170,7 @@ Proxy logunda (`[5] Log göster`) bu şöyle görünür:
 Yönetici izni sadece 1. ve 2. adımlar için (sistem dosyası ve görev kaydı) istenir. Proxy'nin kendisi yönetici
 olarak **çalışmaz**.
 
-`[2] Tamamen kaldır` bunların hepsini geri alır: görev silinir, proxy durdurulur, hosts bloğu kaldırılır.
+`Kaldır` bunların hepsini geri alır: görev silinir, proxy durdurulur, hosts bloğu kaldırılır.
 
 ## 5. Bilgisayar açıldığında ne oluyor?
 
@@ -235,8 +235,8 @@ düzeyindedir. VPN'den farklı olarak trafik başka bir ülkedeki sunucuya gitme
 - ❌ Hiçbir sunucuya veri, istatistik veya telemetri göndermez.
 - ❌ Yönetici yetkisiyle sürekli çalışmaz (sadece kurulum/kaldırma anında).
 
-Tüm kaynak kodu dört dosyadır ve birkaç yüz satırdır. İstersen her satırını okuyabilirsin:
-[`EMYDPI.bat`](EMYDPI.bat) · [`emydpi.ps1`](emydpi.ps1) · [`emydpi-proxy.ps1`](emydpi-proxy.ps1) ·
+Tüm kaynak kodu beş dosyadır. İstersen her satırını okuyabilirsin:
+[`EMYDPI.bat`](EMYDPI.bat) · [`emydpi-gui.ps1`](emydpi-gui.ps1) · [`emydpi.ps1`](emydpi.ps1) · [`emydpi-proxy.ps1`](emydpi-proxy.ps1) ·
 [`emydpi-proxy.cs`](emydpi-proxy.cs)
 
 VirusTotal sonuçları ve dosya özetleri (SHA256) için [README → Güvenlik](README.md#guvenlik)'e bak.

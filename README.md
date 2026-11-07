@@ -47,24 +47,24 @@ Sadece seçtiğin servislerin trafiğini etkiler; diğer sitelere, DNS ayarları
 > - **zapret:** `service.bat` → *Remove Services*, sonra klasörü sil.
 > - **Diğerleri:** kendi kaldırma adımlarıyla kaldır, otomatik başlatmadan çıkar.
 >
-> Unutursan sorun değil: `[1] Kur / Onar` bunları **otomatik tespit eder**, seni uyarır ve istersen durdurur.
+> Unutursan sorun değil: `Kur / Onar` bunları **otomatik tespit eder**, seni uyarır ve istersen durdurur.
 > Başka araçların `hosts` dosyasına eklediği eski Discord/Roblox satırlarını da kendisi temizler.
 
 1. **[EMYDPI.zip](https://github.com/yigitislamoglu/EMYDPI/releases/latest/download/EMYDPI.zip)** dosyasını indir
    ve bir klasöre çıkar (örneğin `Belgeler\EMYDPI`).
-2. `EMYDPI.bat` dosyasına çift tıkla, yönetici iznine **Evet** de.
-3. Menüden **`[1] Kur / Onar`** seç. Discord ve Roblox birlikte kurulur.
-   Sadece birini istiyorsan **`[7] Servis seç`** kullan.
+2. `EMYDPI.bat` dosyasına çift tıkla, yönetici iznine **Evet** de. EMYDPI penceresi açılır.
+3. **Hangi servisler?** bölümünden Discord'u, Roblox'u ya da ikisini seç, **`Kur / Onar`** butonuna bas.
 
-Hepsi bu. Discord kendiliğinden yeniden açılır; Roblox'u da normal şekilde açabilirsin. 🎉
+Hepsi bu. Discord kendiliğinden yeniden açılır; Roblox'u da normal şekilde açabilirsin. Durum yeşil
+**"Çalışıyor"** olduğunda pencereyi kapatabilirsin; EMYDPI arka planda çalışmaya devam eder. 🎉
 
 <p align="center">
-  <img src="assets/menu.svg" alt="EMYDPI menüsü" width="640">
+  <img src="assets/gui.png" alt="EMYDPI arayüzü" width="480">
 </p>
 
 > [!IMPORTANT]
 > Klasörü kurulumdan sonra **taşıma veya silme**; otomatik başlatma bu klasördeki dosyaları kullanır.
-> Taşıman gerekirse yeni yerinde `[1] Kur / Onar`'ı bir kez daha çalıştır.
+> Taşıman gerekirse yeni yerinde `Kur / Onar`'ı bir kez daha çalıştır.
 
 > [!WARNING]
 > **Kaspersky vb. antivirüs kullanıyorsan:** kurulum Windows'un `hosts` dosyasına birkaç satır ekler. Bazı
@@ -74,8 +74,8 @@ Hepsi bu. Discord kendiliğinden yeniden açılır; Roblox'u da normal şekilde 
 
 ### Eski sürümden güncelliyorsan
 
-Yeni ZIP'i **aynı klasöre** çıkarıp dosyaların üzerine yaz, sonra `EMYDPI.bat` → **`[1] Kur / Onar`**.
-v1.0.0 kullanıyorsan ve Roblox da istiyorsan `[7] Servis seç` → `[1] Discord + Roblox` seç.
+Yeni ZIP'i **aynı klasöre** çıkarıp dosyaların üzerine yaz, sonra `EMYDPI.bat` → istediğin servisleri seç →
+**`Kur / Onar`**.
 
 ### Sistem gereksinimleri
 
@@ -87,17 +87,30 @@ v1.0.0 kullanıyorsan ve Roblox da istiyorsan `[7] Servis seç` → `[1] Discord
 | ⚠️ **İş / okul bilgisayarı** | PowerShell yönetici tarafından kısıtlanmışsa çalışmaz. Kurulum bunu da kontrol eder. |
 | ⚠️ **443 portu boş olmalı** | XAMPP/Apache, IIS, VMware gibi 443'ü kullanan bir program açıksa kurulum seni uyarır. |
 
-## 📋 Menü
+## 🖱️ Arayüz
 
-| Seçenek | Ne yapar |
+| Buton | Ne yapar |
 |---|---|
-| `[1] Kur / Onar` | Çakışan programları kontrol eder, hosts kayıtlarını ekler, proxy'yi otomatik modda başlatır, açılışta otomatik çalışmayı ayarlar. Mevcut servis seçimini korur; ilk kurulumda Discord + Roblox |
-| `[2] Tamamen kaldır` | Her şeyi geri alır: proxy, otomatik başlatma, hosts kayıtları |
-| `[3] Proxy'yi başlat` | Proxy'yi (yeniden) başlatır, Discord'u yeniden açar |
-| `[4] Proxy'yi durdur` | Proxy'yi durdurur (kurulum kalır) |
-| `[5] Log göster` | Son bağlantı kayıtlarını gösterir |
-| `[6] Yöntem seç` | Gelişmiş: otomatik mod yerine tek bir atlatma yöntemini sabitler (sorun giderme için, normalde gerekmez) |
-| `[7] Servis seç` | Discord + Roblox / sadece Discord / sadece Roblox |
+| **Hangi servisler?** | Discord, Roblox ya da ikisi. Seçim `Kur / Onar` ile uygulanır |
+| `Kur / Onar` | Çakışan programları kontrol eder, hosts kayıtlarını ekler, proxy'yi başlatır, açılışta otomatik çalışmayı ayarlar. Bir sorun olursa tekrar basman yeterli |
+| `Başlat` | Proxy'yi (yeniden) başlatır, Discord'u yeniden açar |
+| `Durdur` | Proxy'yi durdurur (kurulum kalır) |
+| `Kaldır` | Her şeyi geri alır: proxy, otomatik başlatma, hosts kayıtları |
+| *Gelişmiş ayarlar* → **Atlatma yöntemi** | Otomatik mod yerine tek bir yöntemi sabitler (sorun giderme için, normalde gerekmez) |
+| *Gelişmiş ayarlar* → `Logu göster` | Son bağlantı kayıtlarını gösterir |
+
+Üstteki durum kartı her şeyi tek bakışta gösterir: **yeşil** çalışıyor, **turuncu** bir şey eksik, **gri** kurulu
+değil. GoodbyeDPI gibi çakışan bir program çalışıyorsa kırmızı bir uyarı çıkar.
+
+<details>
+<summary>Yazı menüsünü tercih edenler için</summary>
+
+Eski numaralı menü hâlâ duruyor. Komut isteminde EMYDPI klasöründeyken:
+
+```bat
+EMYDPI.bat konsol
+```
+</details>
 
 ## 🔍 Nasıl çalışıyor?
 
@@ -142,7 +155,8 @@ adım adım yolculuğunu, kurulumda ve bilgisayar açılışında neler olduğun
 
 | Dosya | Görev |
 |---|---|
-| [`EMYDPI.bat`](EMYDPI.bat) | Menü, yönetici izni ister |
+| [`EMYDPI.bat`](EMYDPI.bat) | Başlatıcı: yönetici izni ister, arayüzü açar (`konsol` ile yazı menüsü) |
+| [`emydpi-gui.ps1`](emydpi-gui.ps1) | Arayüz (WPF, Windows'un kendi bileşeni). İşlemleri `emydpi.ps1`'e yaptırır |
 | [`emydpi.ps1`](emydpi.ps1) | Kurulum/kaldırma, servis listeleri, hosts ve zamanlanmış görev yönetimi |
 | [`emydpi-proxy.cs`](emydpi-proxy.cs) | Proxy'nin kendisi (C#, çalışırken PowerShell tarafından derlenir) |
 | [`emydpi-proxy.ps1`](emydpi-proxy.ps1) | Proxy'yi derleyip başlatır |
@@ -155,7 +169,7 @@ adım adım yolculuğunu, kurulumda ve bilgisayar açılışında neler olduğun
 - Görev Zamanlayıcı'ya **EMYDPI** adlı, oturum açılışında çalışan bir görev eklenir. Bu görev yönetici yetkisiyle
   değil, normal kullanıcı olarak ve pencere açmadan çalışır.
 
-`[2] Tamamen kaldır` bunların hepsini geri alır.
+`Kaldır` bunların hepsini geri alır.
 
 **Yönlendirilen alan adları:**
 
@@ -199,7 +213,7 @@ EMYDPI arka planda sürekli çalışır ama **hissedilmez**. Aşağıdaki değer
 bulunmadı (Avast, AVG, BitDefender, CrowdStrike, Kaspersky, ESET, Microsoft ve diğerleri).
 [Sonucu kendin gör →](https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441)
 
-EMYDPI'de **derlenmiş tek bir dosya bile yoktur**: `.exe`, `.dll` veya sürücü bulunmaz. Dört metin dosyasından
+EMYDPI'de **derlenmiş tek bir dosya bile yoktur**: `.exe`, `.dll` veya sürücü bulunmaz. Beş metin dosyasından
 oluşur ve her satırı okunabilir. İnternetten hiçbir şey indirmez, hiçbir sunucuya veri göndermez.
 Ayrıntılar için [NASIL-CALISIR.md → Güvenlik](NASIL-CALISIR.md#7-güvenlik-ne-yapar-ne-yapmaz).
 
@@ -227,10 +241,10 @@ Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 <details>
 <summary><b>Discord "Checking for updates…" ekranında kalıyor</b></summary>
 
-1. Menünün üstünde **"Çakışan program çalışıyor"** uyarısı var mı bak. Varsa o programı kaldır (yukarıdaki
-   Kurulum uyarısına bak) ve `[1]`'i tekrar çalıştır.
-2. `[5] Log göster`'e bak. `discord.com -> ... [tlsrec]` gibi satırlar görünüyorsa proxy çalışıyordur.
-   Hiç satır yoksa `[3] Proxy'yi başlat`'ı dene.
+1. Durum kartında **"Çakışan program çalışıyor"** uyarısı var mı bak. Varsa o programı kaldır (yukarıdaki
+   Kurulum uyarısına bak) ve `Kur / Onar`'a tekrar bas.
+2. *Gelişmiş ayarlar* → `Logu göster`'e bas. `discord.com -> ... [tlsrec]` gibi satırlar görünüyorsa proxy çalışıyordur.
+   Hiç satır yoksa `Başlat`'a basmayı dene.
 3. Logda `tum yontemler denendi` yazıyorsa operatörün henüz desteklenmeyen bir yöntem kullanıyor olabilir.
    Lütfen operatörünün adıyla birlikte bir [Issue](https://github.com/yigitislamoglu/EMYDPI/issues) aç.
 </details>
@@ -246,7 +260,7 @@ sorduğunda **E** dersen onları durdurur ve otomatik başlamalarını kapatır.
 <details>
 <summary><b>Roblox açılmıyor veya oyuna girmiyor</b></summary>
 
-1. `[5] Log göster`'de `roblox.com` satırları görünüyor mu bak. Görünmüyorsa `[7] Servis seç` ile Roblox'un kurulu
+1. *Gelişmiş ayarlar* → `Logu göster`'de `roblox.com` satırları görünüyor mu bak. Görünmüyorsa "Hangi servisler?" bölümünde Roblox'un seçili
    olduğundan emin ol.
 2. Roblox'u görev yöneticisinden tamamen kapatıp yeniden aç.
 3. Logda `cozulemedi` veya `hata` yazan bir Roblox adresi varsa, ya da hiç görünmeyen bir adres yüzünden takılıyorsa
@@ -257,13 +271,13 @@ sorduğunda **E** dersen onları durdurur ve otomatik başlamalarını kapatır.
 <summary><b>"443 portunu başka bir program kullanıyor"</b></summary>
 
 Bilgisayarında 443 portunu dinleyen bir program var (yerel web sunucusu, IIS, XAMPP, bazı VPN'ler vb.).
-O programı kapatıp `[3]`'ü çalıştır.
+O programı kapatıp `Başlat`'a bas.
 </details>
 
 <details>
 <summary><b>Discord'a / Roblox'a erişim tamamen gitti</b></summary>
 
-Proxy kapalıyken hosts kayıtları duruyorsa bağlantı olmaz. `[3]` ile proxy'yi başlat ya da `[2]` ile tamamen kaldır.
+Proxy kapalıyken hosts kayıtları duruyorsa bağlantı olmaz. `Başlat` ile proxy'yi başlat ya da `Kaldır` ile tamamen kaldır.
 </details>
 
 <details>
@@ -276,7 +290,7 @@ değildi; ileride engellenirse lütfen bir [Issue](https://github.com/yigitislam
 <details>
 <summary><b>Kaldırmak istiyorum</b></summary>
 
-`EMYDPI.bat` → `[2] Tamamen kaldır`. Ardından klasörü silebilirsin. Antivirüs hosts dosyasını koruyorsa kaldırma
+`EMYDPI.bat` → `Kaldır`. Ardından klasörü silebilirsin. Antivirüs hosts dosyasını koruyorsa kaldırma
 sırasında da kısa süre duraklatman gerekir.
 </details>
 

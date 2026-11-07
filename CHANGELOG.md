@@ -1,5 +1,15 @@
 # Değişiklik Günlüğü
 
+## [1.3.0] - 2026-11-07
+
+### Yeni
+- 🖱️ **Arayüz:** `EMYDPI.bat`'a çift tıklayınca numaralı menü yerine butonlu, koyu temalı bir pencere açılır.
+  Canlı durum kartı (çalışıyor / eksik / kurulu değil), servis seçimi, Kur / Başlat / Durdur / Kaldır butonları,
+  gelişmiş ayarlarda yöntem seçimi ve log, işlem çıktısı paneli. Çakışan program ve antivirüs engeli için
+  açıklamalı uyarı pencereleri.
+- Arayüz Windows'un kendi WPF bileşeniyle yazıldı; yine `.exe`/`.dll` yok.
+- Eski yazı menüsü `EMYDPI.bat konsol` ile kullanılmaya devam edebilir.
+
 ## [1.2.0] - 2026-11-07
 
 ### Yeni
@@ -44,6 +54,7 @@
 - Tek menülü `.bat`: kur, kaldır, başlat, durdur, log.
 - Antivirüs `hosts` dosyasını koruyorsa anlaşılır hata mesajı verir; `hosts` zaten doğruysa dosyaya dokunmaz.
 
+[1.3.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.3.0
 [1.2.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.2.0
 [1.1.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.1.0
 [1.0.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.0.0
