@@ -195,7 +195,7 @@ EMYDPI arka planda sürekli çalışır ama **hissedilmez**. Aşağıdaki değer
   <a href="https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441"><img src="https://img.shields.io/badge/VirusTotal-0%2F64%20temiz-3BA55D?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal 0/64"></a>
 </p>
 
-✅ **VirusTotal: 0/64.** EMYDPI v1.1.0, 64 antivirüs motorunun **hiçbiri** tarafından zararlı veya şüpheli
+✅ **VirusTotal: 0/64.** (v1.1.0 taraması; v1.2.0 sonucu eklenecek.) EMYDPI v1.1.0, 64 antivirüs motorunun **hiçbiri** tarafından zararlı veya şüpheli
 bulunmadı (Avast, AVG, BitDefender, CrowdStrike, Kaspersky, ESET, Microsoft ve diğerleri).
 [Sonucu kendin gör →](https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441)
 
@@ -209,13 +209,13 @@ Ayrıntılar için [NASIL-CALISIR.md → Güvenlik](NASIL-CALISIR.md#7-güvenlik
 Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 ```
 
-| Dosya (v1.1.0) | SHA256 |
+| Dosya (v1.2.0) | SHA256 |
 |---|---|
-| `EMYDPI.zip` | `9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441` |
-| `EMYDPI.bat` | `5cbf3836cffd0ab86833b722ed3c79112f453b73d0bfcd576fb26250479fdbb2` |
-| `emydpi.ps1` | `7c37bdbfb39908f4f320d78d6d11dc9736cd0406b74cebf08a1151f77dd72dac` |
-| `emydpi-proxy.ps1` | `2ce308f3d692cc57aced3ce6b5b6e002219e0a786602e0d23af396a6ccc10e64` |
-| `emydpi-proxy.cs` | `368a855fe3105499605b50d3c2d26542ea2824a6545a2990279a43bec947d407` |
+| `EMYDPI.zip` | `d3326befdbc25f54d8f70a9bee389b46955ed1c5673462626a55f1add918751a` |
+| `EMYDPI.bat` | `7e678db45bbaaa584bd4084b5e16063c1070f5bbe4073df31b7070508d45d890` |
+| `emydpi.ps1` | `99ac53fe93aed553e385d7ec26bd9d8ad438d2dcce330225c1927e7d5f488567` |
+| `emydpi-proxy.ps1` | `bc2090b63b289385a1a976bd4e246aa42f73e8a75a7937166440656e85a44b0a` |
+| `emydpi-proxy.cs` | `942f037c6ae001716f5008e49dd0163e980fd26e142a2c93337f007a18fd0fc8` |
 
 > [!NOTE]
 > EMYDPI'yi **sadece bu GitHub sayfasından** indir. Başka sitelerde veya Discord sunucularında paylaşılan
