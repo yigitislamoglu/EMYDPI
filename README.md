@@ -157,8 +157,12 @@ EMYDPI arka planda sürekli çalışır ama **hissedilmez**. Aşağıdaki değer
 ## 🛡️ Güvenlik ve VirusTotal
 
 <p>
-  <a href="https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441"><img src="https://img.shields.io/badge/VirusTotal-EMYDPI.zip%20v1.1.0-394EFF?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal"></a>
+  <a href="https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441"><img src="https://img.shields.io/badge/VirusTotal-0%2F64%20temiz-3BA55D?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal 0/64"></a>
 </p>
+
+✅ **VirusTotal: 0/64.** EMYDPI v1.1.0, 64 antivirüs motorunun **hiçbiri** tarafından zararlı veya şüpheli
+bulunmadı (Avast, AVG, BitDefender, CrowdStrike, Kaspersky, ESET, Microsoft ve diğerleri).
+[Sonucu kendin gör →](https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441)
 
 EMYDPI'de **derlenmiş tek bir dosya bile yoktur**: `.exe`, `.dll` veya sürücü bulunmaz. Dört metin dosyasından
 oluşur ve her satırı okunabilir. İnternetten hiçbir şey indirmez, hiçbir sunucuya veri göndermez.
