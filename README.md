@@ -209,7 +209,7 @@ EMYDPI arka planda sürekli çalışır ama **hissedilmez**. Aşağıdaki değer
   <a href="https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441"><img src="https://img.shields.io/badge/VirusTotal-0%2F64%20temiz-3BA55D?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal 0/64"></a>
 </p>
 
-✅ **VirusTotal: 0/64.** (v1.1.0 taraması; v1.2.0 sonucu eklenecek.) EMYDPI v1.1.0, 64 antivirüs motorunun **hiçbiri** tarafından zararlı veya şüpheli
+✅ **VirusTotal: 0/64.** (v1.1.0 taraması; yeni sürümlerin sonucu eklenecek.) EMYDPI v1.1.0, 64 antivirüs motorunun **hiçbiri** tarafından zararlı veya şüpheli
 bulunmadı (Avast, AVG, BitDefender, CrowdStrike, Kaspersky, ESET, Microsoft ve diğerleri).
 [Sonucu kendin gör →](https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441)
 
@@ -223,11 +223,12 @@ Ayrıntılar için [NASIL-CALISIR.md → Güvenlik](NASIL-CALISIR.md#7-güvenlik
 Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 ```
 
-| Dosya (v1.2.0) | SHA256 |
+| Dosya (v1.3.0) | SHA256 |
 |---|---|
-| `EMYDPI.zip` | `d3326befdbc25f54d8f70a9bee389b46955ed1c5673462626a55f1add918751a` |
-| `EMYDPI.bat` | `7e678db45bbaaa584bd4084b5e16063c1070f5bbe4073df31b7070508d45d890` |
-| `emydpi.ps1` | `99ac53fe93aed553e385d7ec26bd9d8ad438d2dcce330225c1927e7d5f488567` |
+| `EMYDPI.zip` | `de195c16f74fb1f5bb61f592847c6cc6b65d457535a5fd8a9b4f8d8a8b6b9712` |
+| `EMYDPI.bat` | `8d0085486388fdc42d113a463d84619a70b71b5bfe757e8616643b607867b5ad` |
+| `emydpi.ps1` | `0a1b3c1b26b63705c9ad76fb439bf25d0a00e9e3e17c45fe6ea22b0d21bfcbac` |
+| `emydpi-gui.ps1` | `62e47424bc8c72de03230caf6fb6eb7ab07f482f7f5f472490b6396ae8b47da1` |
 | `emydpi-proxy.ps1` | `bc2090b63b289385a1a976bd4e246aa42f73e8a75a7937166440656e85a44b0a` |
 | `emydpi-proxy.cs` | `942f037c6ae001716f5008e49dd0163e980fd26e142a2c93337f007a18fd0fc8` |
 
