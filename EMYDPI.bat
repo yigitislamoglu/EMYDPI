@@ -1,6 +1,7 @@
 @echo off
 setlocal
-title EMYDPI - Discord
+set "VER=1.0.0"
+title EMYDPI v%VER% - Discord
 cd /d "%~dp0"
 
 :: --- Yonetici yetkisi (hosts ve zamanlanmis gorev icin gerekli) ---
@@ -16,9 +17,10 @@ set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0emydpi.ps1""
 :menu
 cls
 echo ==================================================
-echo                   EMYDPI - Discord
+echo                EMYDPI v%VER% - Discord
 echo   Sadece Discord trafigini DPI'dan gecirir.
 echo   Diger site ve DNS ayarlarina dokunmaz.
+echo   github.com/yigitislamoglu/EMYDPI
 echo ==================================================
 echo.
 %PS% -Action status

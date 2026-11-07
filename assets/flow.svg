@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9aa0c8"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#ed4245"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#3ba55d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="520" rx="20" fill="#14161f"/>
+  <g font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+
+    <text x="40" y="52" font-size="24" font-weight="700" fill="#ffffff">EMYDPI olmadan</text>
+    <!-- without -->
+    <rect x="40" y="76" width="170" height="70" rx="12" fill="#23263a" stroke="#3a3e5c"/>
+    <text x="125" y="118" text-anchor="middle" font-size="20" font-weight="600" fill="#e6e8ff">Discord</text>
+    <line x1="210" y1="111" x2="470" y2="111" stroke="#ed4245" stroke-width="3" marker-end="url(#arrRed)"/>
+    <text x="340" y="98" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#9aa0c8">SNI: discord.com</text>
+    <rect x="480" y="66" width="200" height="90" rx="12" fill="#3a1d22" stroke="#ed4245"/>
+    <text x="580" y="106" text-anchor="middle" font-size="20" font-weight="700" fill="#ff8a8c">Operatör DPI</text>
+    <text x="580" y="134" text-anchor="middle" font-size="16" fill="#ffb3b4">"discord.com" görüldü</text>
+    <text x="760" y="118" font-size="40" font-weight="800" fill="#ed4245">✕</text>
+    <text x="810" y="118" font-size="18" fill="#ff8a8c">Bağlantı kesilir</text>
+
+    <line x1="40" y1="190" x2="1160" y2="190" stroke="#2b2e45" stroke-width="2"/>
+
+    <text x="40" y="236" font-size="24" font-weight="700" fill="#ffffff">EMYDPI ile</text>
+    <!-- with -->
+    <rect x="40" y="262" width="170" height="70" rx="12" fill="#23263a" stroke="#3a3e5c"/>
+    <text x="125" y="304" text-anchor="middle" font-size="20" font-weight="600" fill="#e6e8ff">Discord</text>
+
+    <line x1="210" y1="297" x2="276" y2="297" stroke="#9aa0c8" stroke-width="3" marker-end="url(#arr)"/>
+    <rect x="284" y="250" width="250" height="94" rx="12" fill="#1f2347" stroke="#5865f2" stroke-width="2"/>
+    <text x="409" y="284" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">EMYDPI proxy</text>
+    <text x="409" y="310" text-anchor="middle" font-family="Consolas, monospace" font-size="15" fill="#aab2ff">127.0.0.1:443</text>
+    <text x="409" y="332" text-anchor="middle" font-size="14" fill="#9aa0c8">hosts ile yönlendirilir</text>
+
+    <!-- DoH -->
+    <line x1="409" y1="344" x2="409" y2="398" stroke="#9aa0c8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+    <rect x="304" y="404" width="210" height="64" rx="12" fill="#23263a" stroke="#3a3e5c"/>
+    <text x="409" y="432" text-anchor="middle" font-size="16" font-weight="600" fill="#e6e8ff">Şifreli DNS (DoH)</text>
+    <text x="409" y="454" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#9aa0c8">1.1.1.1 · 8.8.8.8</text>
+
+    <!-- split packets -->
+    <rect x="566" y="262" width="96" height="30" rx="8" fill="#5865f2"/>
+    <text x="614" y="283" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#fff">…d</text>
+    <rect x="566" y="302" width="96" height="30" rx="8" fill="#8b95ff"/>
+    <text x="614" y="323" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#14161f">iscord…</text>
+    <text x="614" y="356" text-anchor="middle" font-size="14" fill="#9aa0c8">2 parçaya bölünür</text>
+
+    <line x1="534" y1="297" x2="560" y2="297" stroke="#9aa0c8" stroke-width="3"/>
+    <line x1="662" y1="297" x2="722" y2="297" stroke="#3ba55d" stroke-width="3" marker-end="url(#arrGreen)"/>
+    <rect x="730" y="252" width="200" height="90" rx="12" fill="#1d2b22" stroke="#3ba55d"/>
+    <text x="830" y="292" text-anchor="middle" font-size="20" font-weight="700" fill="#7fd99a">Operatör DPI</text>
+    <text x="830" y="320" text-anchor="middle" font-size="16" fill="#b5ecc4">alan adını göremez</text>
+    <line x1="930" y1="297" x2="982" y2="297" stroke="#3ba55d" stroke-width="3" marker-end="url(#arrGreen)"/>
+    <rect x="990" y="262" width="170" height="70" rx="12" fill="#23263a" stroke="#3ba55d"/>
+    <text x="1075" y="294" text-anchor="middle" font-size="18" font-weight="600" fill="#e6e8ff">Discord</text>
+    <text x="1075" y="316" text-anchor="middle" font-size="15" fill="#7fd99a">sunucusu ✓</text>
+
+    <text x="600" y="500" text-anchor="middle" font-size="15" fill="#7c82a8">Şifreli trafik çözülmez veya değiştirilmez · Diğer tüm trafik normal yolundan gider</text>
+  </g>
+</svg>

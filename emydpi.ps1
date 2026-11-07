@@ -1,4 +1,5 @@
-# EMYDPI - Discord'a ozel DPI/DNS atlatma
+# EMYDPI v1.0.0 - Discord'a ozel DPI/DNS atlatma
+# https://github.com/yigitislamoglu/EMYDPI  (MIT)
 # 1) hosts: Discord alan adlari -> 127.0.0.1
 # 2) emydpi-proxy: 127.0.0.1:443'te dinler, gercek IP'yi DoH ile bulur,
 #    TLS ClientHello'yu bolerek DPI'yi atlatir. Diger trafige dokunmaz.
