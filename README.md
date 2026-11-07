@@ -100,6 +100,9 @@ Bu yüzden sertifika kurulumu da gerekmez.
 > **Roblox oyun sunucuları** (oyun içi bağlantı) UDP ile doğrudan IP'ye bağlanır ve şu an engelli değildir; proxy'den
 > geçmesine gerek yoktur. EMYDPI Roblox'un giriş, site, API ve oyuna katılma bağlantılarını açar.
 
+📖 **Ayrıntılı teknik açıklama:** [NASIL-CALISIR.md](NASIL-CALISIR.md). Engelin nasıl uygulandığını, bir bağlantının
+adım adım yolculuğunu, kurulumda ve bilgisayar açılışında neler olduğunu orada bulabilirsin.
+
 <details>
 <summary><b>Dosyalar ve sisteme yapılan değişiklikler</b></summary>
 
@@ -129,6 +132,56 @@ Bu yüzden sertifika kurulumu da gerekmez.
 Tam liste [`emydpi.ps1`](emydpi.ps1) içindedir.
 
 </details>
+
+<a id="performans"></a>
+## ⚡ Performans: bilgisayarı yormaz
+
+EMYDPI arka planda sürekli çalışır ama **hissedilmez**. Aşağıdaki değerler gerçek ölçümlerdir:
+
+| Durum | CPU kullanımı | Bellek |
+|---|---|---|
+| 💤 Boşta | **%0** | ~7 MB |
+| 💬 1 saat normal Discord kullanımı | toplam **2,7 saniye** (ortalama %0,0025) | ~7 MB |
+| 📥 102 MB dosya indirme, tam hız | işlemcinin **%0,28**'i | ~85 MB |
+| 🔀 100 eşzamanlı bağlantı | 0,5 saniye, hepsi başarılı | ~85 MB |
+
+- **Hız kaybı yok:** Aynı 102 MB'lık dosya doğrudan bağlantıda 8,0 MB/sn, EMYDPI üzerinden 9,7 MB/sn indi.
+  Sınır senin internet hattın.
+- **Ping artmaz:** Proxy senin bilgisayarında çalışır; trafik VPN gibi başka bir ülkeye gitmez.
+- **Oyunları etkilemez:** Roblox oyun trafiği, Discord sesli/görüntülü sohbet ve diğer tüm programlar proxy'den
+  hiç geçmez.
+- **Neden bu kadar hafif?** Proxy sadece her bağlantının ilk paketini (birkaç yüz bayt) böler, gerisini olduğu gibi
+  aktarır. CPU'yu en çok yoran şifreleme işlemi yapılmaz.
+
+<a id="guvenlik"></a>
+## 🛡️ Güvenlik ve VirusTotal
+
+<p>
+  <a href="https://www.virustotal.com/gui/file/9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441"><img src="https://img.shields.io/badge/VirusTotal-EMYDPI.zip%20v1.1.0-394EFF?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal"></a>
+</p>
+
+EMYDPI'de **derlenmiş tek bir dosya bile yoktur**: `.exe`, `.dll` veya sürücü bulunmaz. Dört metin dosyasından
+oluşur ve her satırı okunabilir. İnternetten hiçbir şey indirmez, hiçbir sunucuya veri göndermez.
+Ayrıntılar için [NASIL-CALISIR.md → Güvenlik](NASIL-CALISIR.md#7-güvenlik-ne-yapar-ne-yapmaz).
+
+**İndirdiğin dosyanın değiştirilmediğini doğrula.** İndirdiğin ZIP'in SHA256 değeri aşağıdakiyle aynı olmalı:
+
+```powershell
+Get-FileHash .\EMYDPI.zip -Algorithm SHA256
+```
+
+| Dosya (v1.1.0) | SHA256 |
+|---|---|
+| `EMYDPI.zip` | `9d6e981e0996ecdda762a877cf442f6846e70a7b1104dd9f96546dd0c1701441` |
+| `EMYDPI.bat` | `5cbf3836cffd0ab86833b722ed3c79112f453b73d0bfcd576fb26250479fdbb2` |
+| `emydpi.ps1` | `7c37bdbfb39908f4f320d78d6d11dc9736cd0406b74cebf08a1151f77dd72dac` |
+| `emydpi-proxy.ps1` | `2ce308f3d692cc57aced3ce6b5b6e002219e0a786602e0d23af396a6ccc10e64` |
+| `emydpi-proxy.cs` | `368a855fe3105499605b50d3c2d26542ea2824a6545a2990279a43bec947d407` |
+
+> [!NOTE]
+> EMYDPI'yi **sadece bu GitHub sayfasından** indir. Başka sitelerde veya Discord sunucularında paylaşılan
+> kopyalar değiştirilmiş olabilir. Bazı antivirüsler `hosts` dosyasını değiştiren her betiği şüpheli sayabilir;
+> kodu kendin inceleyebilir veya yukarıdaki VirusTotal sonucuna bakabilirsin.
 
 ## 🛠️ Sorun giderme
 
@@ -180,7 +233,10 @@ sırasında da kısa süre duraklatman gerekir.
 
 **Güvenli mi?** Tüm kod açık ve birkaç yüz satır. İnternetten hiçbir dosya indirmez, hiçbir şey çalıştırmaz.
 Tek dış bağlantısı, gerçek IP adreslerini öğrenmek için Cloudflare (1.1.1.1) ve Google (8.8.8.8) şifreli DNS
-sunucularına yapılan sorgulardır.
+sunucularına yapılan sorgulardır. VirusTotal sonucu ve dosya özetleri için [Güvenlik](#guvenlik) bölümüne bak.
+
+**Bilgisayarımı yavaşlatır mı?** Hayır. Boşta %0 CPU ve ~7 MB RAM kullanır. Ölçümler [Performans](#performans)
+bölümünde.
 
 **Oyunlarda ping'imi artırır mı?** Hayır. VPN değildir; seçilen servisler dışındaki trafiğe dokunmaz. Roblox oyun
 trafiği zaten proxy'den geçmez, doğrudan sunucuya gider.
