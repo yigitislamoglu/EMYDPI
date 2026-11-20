@@ -228,14 +228,14 @@ Ayrıntılar için [NASIL-CALISIR.md → Güvenlik](NASIL-CALISIR.md#7-güvenlik
 Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 ```
 
-| Dosya (v1.3.0) | SHA256 |
+| Dosya (v1.4.0) | SHA256 |
 |---|---|
-| `EMYDPI.zip` | `de195c16f74fb1f5bb61f592847c6cc6b65d457535a5fd8a9b4f8d8a8b6b9712` |
-| `EMYDPI.bat` | `8d0085486388fdc42d113a463d84619a70b71b5bfe757e8616643b607867b5ad` |
-| `emydpi.ps1` | `0a1b3c1b26b63705c9ad76fb439bf25d0a00e9e3e17c45fe6ea22b0d21bfcbac` |
-| `emydpi-gui.ps1` | `62e47424bc8c72de03230caf6fb6eb7ab07f482f7f5f472490b6396ae8b47da1` |
-| `emydpi-proxy.ps1` | `bc2090b63b289385a1a976bd4e246aa42f73e8a75a7937166440656e85a44b0a` |
-| `emydpi-proxy.cs` | `942f037c6ae001716f5008e49dd0163e980fd26e142a2c93337f007a18fd0fc8` |
+| `EMYDPI.zip` | `e3d8ade9c06db7cdbf3832e560fff1e5c54525248e9a9a0403fdca44d9fae3bd` |
+| `EMYDPI.bat` | `75fe517a8d5ea90e8bc30cdea1b826ff08dd85ef2e7ec3604a658189e7dcf2e3` |
+| `emydpi.ps1` | `bdd8bfd8217bd192a7bdc0e7e7309106709311bd44280edaa392a091cb380e7f` |
+| `emydpi-gui.ps1` | `a9dfbfbac634718c481fc6306c96eb7dd0b567964629f0baad4860064227373b` |
+| `emydpi-proxy.ps1` | `66c23177cb012bed1c47b2453e6d0056c1a7a0772aa28d7b981472836aad0f03` |
+| `emydpi-proxy.cs` | `31e8df13f7b7f6cab42812e674018788eccc33a73cd9925185b4d40ab3df23b6` |
 
 > [!NOTE]
 > EMYDPI'yi **sadece bu GitHub sayfasından** indir. Başka sitelerde veya Discord sunucularında paylaşılan
