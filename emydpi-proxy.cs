@@ -7,10 +7,15 @@
 // auto modu: her internet saglayicisinin DPI'si farkli davranabilir. Proxy sirayla birkac bolme
 // yontemi dener; sunucu cevap verdigi ilk yontemi ogrenir, kaydeder ve sonraki baglantilarda
 // dogrudan onu kullanir. Istemciye henuz hicbir sey gonderilmedigi icin yeniden deneme guvenlidir.
+//
+// Internet kesintisi DPI engeliyle karistirilmaz: sunucuya TCP baglantisi hic kurulamiyorsa sorun
+// yontemde degil agdadir; bu durumda yontem degistirilmez. Ag degistiginde (Wi-Fi, modem yeniden
+// baslama) ogrenilenler sifirlanir ve en hizli yontem tekrar denenir.
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -20,17 +25,32 @@ public static class EmyProxy
     static readonly object LogLock = new object();
     static string LogPath;
     static string StatePath;
+    static string DnsPath;
     static string Mode = "auto";
 
-    // ---------------- bolme yontemleri ----------------
-    // tlsrec : ClientHello'yu SNI'nin 1. baytindan iki TLS kaydina boler (hizli, cogu DPI icin yeterli)
-    // multi  : SNI'yi birkac baytlik cok sayida TLS kaydina boler
-    // recfrag: tlsrec + SNI bitene kadar kucuk TCP parcalari
-    // frag   : SNI bitene kadar 2 baytlik TCP parcalari (eski yedek mod)
-    static readonly string[] Strategies = { "tlsrec", "multi", "recfrag", "frag" };
+    // ---------------- bolme yontemleri (hizlidan yavasa) ----------------
+    // oob    : SNI'nin 1. baytindan sonra TCP "acil veri" (URG) olarak 1 bayt gonderir. Sunucu bu bayti
+    //          akistan atar, DPI ise akisi yanlis birlestirir. En hizli ve en guclu yontem.
+    // oob2   : ayni, acil bayt kaydin en basinda
+    // tlsrec : ClientHello'yu SNI'nin 1. baytindan iki TLS kaydina boler
+    // recfrag: tlsrec + SNI bitene kadar 1 baytlik TCP parcalari
+    // multi  : SNI'yi 3 baytlik cok sayida TLS kaydina boler
+    // frag   : SNI bitene kadar 1 baytlik TCP parcalari (en yavas, son care)
+    static readonly string[] Strategies = { "oob", "oob2", "tlsrec", "recfrag", "multi", "frag" };
+    const string StateVersion = "v2:";
     static int Learned = 0;                                   // auto modda ogrenilen genel yontem
     static readonly Dictionary<string, int> HostLearned = new Dictionary<string, int>();
-    const int TryTimeoutMs = 4000;
+    static readonly int[] FailStreak = new int[Strategies.Length];
+    static DateTime ReprobeAt = DateTime.MaxValue;            // en hizli yontemi tekrar deneme zamani
+    const int ConnectTimeoutMs = 3000;
+    const int ReplyTimeoutMs = 3000;
+
+    // Sadece bu servislerin alan adlarina aracilik edilir (proxy baska bir amaca kullanilamaz)
+    static readonly string[] AllowedSuffixes = {
+        "discord.com", "discord.gg", "discord.media", "discord.co", "discord.new", "discord.gift",
+        "discord.dev", "discordapp.com", "discordapp.net", "discordcdn.com", "roblox.com", "blox.com",
+        "discord-attachments-uploads-prd.storage.googleapis.com"   // eski surum kurulumlarinin hosts kaydi
+    };
 
     // ---------------- DoH ----------------
     // Hepsi IP ile cagrilir (DNS gerekmez, SNI gonderilmez). RFC 8484 wire format, tum saglayicilar destekler.
@@ -39,7 +59,7 @@ public static class EmyProxy
         "https://1.0.0.1/dns-query", "https://8.8.4.4/dns-query", "https://94.140.14.141/dns-query"
     };
     static int GoodResolver = 0;
-    class CacheEntry { public string[] Ips; public DateTime Expires; }
+    class CacheEntry { public string[] Ips; public DateTime Expires; public bool Refreshing; }
     static readonly Dictionary<string, CacheEntry> Cache = new Dictionary<string, CacheEntry>();
 
     public static void Log(string msg)
@@ -63,10 +83,16 @@ public static class EmyProxy
     {
         Mode = mode;
         LogPath = logPath;
-        StatePath = Path.Combine(Path.GetDirectoryName(logPath), "emydpi-strategy.txt");
+        string dir = Path.GetDirectoryName(logPath);
+        StatePath = Path.Combine(dir, "emydpi-strategy.txt");
+        DnsPath = Path.Combine(dir, "emydpi-dns.txt");
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         ServicePointManager.DefaultConnectionLimit = 32;
         LoadLearned();
+        LoadDns();
+        NetworkChange.NetworkAddressChanged += delegate { OnNetworkChanged(); };
+        NetworkChange.NetworkAvailabilityChanged += delegate { OnNetworkChanged(); };
+
         TcpListener listener = new TcpListener(IPAddress.Loopback, port);
         try { listener.Start(); }
         catch (Exception e)
@@ -78,11 +104,27 @@ public static class EmyProxy
             (mode == "auto" ? " (ogrenilen yontem: " + Strategies[Learned] + ")" : ""));
         while (true)
         {
-            TcpClient c = listener.AcceptTcpClient();
+            TcpClient c;
+            try { c = listener.AcceptTcpClient(); }
+            catch (Exception e) { Log("kabul hatasi: " + e.Message); Thread.Sleep(200); continue; }
             Thread t = new Thread(Handle);
             t.IsBackground = true;
             t.Start(c);
         }
+    }
+
+    static DateTime lastNetChange = DateTime.MinValue;
+    static void OnNetworkChanged()
+    {
+        lock (HostLearned)
+        {
+            if ((DateTime.Now - lastNetChange).TotalSeconds < 5) return;   // ayni degisiklik icin birden fazla olay gelir
+            lastNetChange = DateTime.Now;
+            HostLearned.Clear();
+            for (int i = 0; i < FailStreak.Length; i++) FailStreak[i] = 0;
+            if (Learned != 0) ReprobeAt = DateTime.Now;
+        }
+        Log("Ag degisikligi algilandi, baglantilar yeniden kurulacak");
     }
 
     static void LoadLearned()
@@ -90,8 +132,11 @@ public static class EmyProxy
         try
         {
             if (!File.Exists(StatePath)) return;
-            int i = Array.IndexOf(Strategies, File.ReadAllText(StatePath).Trim());
+            string s = File.ReadAllText(StatePath).Trim();
+            if (!s.StartsWith(StateVersion)) return;           // eski surumun kaydi: en hizli yontemden basla
+            int i = Array.IndexOf(Strategies, s.Substring(StateVersion.Length));
             if (i >= 0) Learned = i;
+            if (Learned != 0) ReprobeAt = DateTime.Now.AddMinutes(10);
         }
         catch { }
     }
@@ -100,7 +145,8 @@ public static class EmyProxy
     {
         if (Learned == i) return;
         Learned = i;
-        try { File.WriteAllText(StatePath, Strategies[i]); } catch { }
+        ReprobeAt = i == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(10);
+        try { File.WriteAllText(StatePath, StateVersion + Strategies[i]); } catch { }
         Log("Yeni yontem ogrenildi ve kaydedildi: " + Strategies[i]);
     }
 
@@ -113,6 +159,13 @@ public static class EmyProxy
             off += n; len -= n;
         }
         return true;
+    }
+
+    static bool IsAllowed(string host)
+    {
+        foreach (string s in AllowedSuffixes)
+            if (host == s || host.EndsWith("." + s)) return true;
+        return false;
     }
 
     // ClientHello icinde SNI adinin baslangic konumunu (record govdesine gore), uzunlugunu ve adi dondurur
@@ -128,7 +181,7 @@ public static class EmyProxy
             p += 1 + body[p];                       // session id
             p += 2 + ((body[p] << 8) | body[p + 1]); // cipher suites
             p += 1 + body[p];                       // compression
-            int extEnd = p + 2 + ((body[p] << 8) | body[p + 1]);
+            int extEnd = Math.Min(body.Length, p + 2 + ((body[p] << 8) | body[p + 1]));
             p += 2;
             while (p + 4 <= extEnd)
             {
@@ -142,8 +195,11 @@ public static class EmyProxy
                     {
                         nameLen = (body[q + 1] << 8) | body[q + 2];
                         nameOffset = q + 3;
-                        if (nameLen <= 0 || nameOffset + nameLen > body.Length) return null;
-                        return Encoding.ASCII.GetString(body, nameOffset, nameLen).ToLowerInvariant();
+                        if (nameLen <= 0 || nameLen > 253 || nameOffset + nameLen > body.Length) return null;
+                        string name = Encoding.ASCII.GetString(body, nameOffset, nameLen).ToLowerInvariant();
+                        foreach (char ch in name)
+                            if (!((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-' || ch == '.')) return null;
+                        return name;
                     }
                 }
                 p += len;
@@ -178,6 +234,17 @@ public static class EmyProxy
         return p;
     }
 
+    // Yerel / ozel ag adresleri gercek sunucu olamaz (sahte DNS cevabi)
+    static bool IsPublic(byte a, byte b)
+    {
+        if (a == 0 || a == 10 || a == 127 || a >= 224) return false;
+        if (a == 169 && b == 254) return false;
+        if (a == 172 && b >= 16 && b <= 31) return false;
+        if (a == 192 && b == 168) return false;
+        if (a == 100 && b >= 64 && b <= 127) return false;
+        return true;
+    }
+
     static string[] ParseAnswer(byte[] m, out int ttl)
     {
         ttl = 300;
@@ -190,15 +257,14 @@ public static class EmyProxy
         for (int i = 0; i < an && p + 10 <= m.Length; i++)
         {
             p = SkipName(m, p);
+            if (p + 10 > m.Length) break;
             int type = (m[p] << 8) | m[p + 1];
             int t = (m[p + 4] << 24) | (m[p + 5] << 16) | (m[p + 6] << 8) | m[p + 7];
             int rdlen = (m[p + 8] << 8) | m[p + 9];
             p += 10;
             if (type == 1 && rdlen == 4 && p + 4 <= m.Length)
             {
-                string ip = m[p] + "." + m[p + 1] + "." + m[p + 2] + "." + m[p + 3];
-                // 0.0.0.0 / 127.x / 10.x gibi sahte cevaplari kabul etme
-                if (m[p] != 0 && m[p] != 127 && m[p] != 10) ips.Add(ip);
+                if (IsPublic(m[p], m[p + 1])) ips.Add(m[p] + "." + m[p + 1] + "." + m[p + 2] + "." + m[p + 3]);
                 if (first) { ttl = t; first = false; }
             }
             p += rdlen;
@@ -211,8 +277,8 @@ public static class EmyProxy
         string dns = Convert.ToBase64String(BuildQuery(host)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url + "?dns=" + dns);
         req.Accept = "application/dns-message";
-        req.Timeout = 3000;
-        req.ReadWriteTimeout = 3000;
+        req.Timeout = 2500;
+        req.ReadWriteTimeout = 2500;
         req.Proxy = null;
         using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
         using (Stream s = resp.GetResponseStream())
@@ -223,20 +289,11 @@ public static class EmyProxy
         }
     }
 
-    static string[] Resolve(string host)
+    // Tum DoH saglayicilarini sirayla dener; maxTries kadar
+    static string[] Lookup(string host, int maxTries)
     {
-        CacheEntry stale = null;
-        lock (Cache)
-        {
-            CacheEntry e;
-            if (Cache.TryGetValue(host, out e))
-            {
-                if (e.Expires > DateTime.Now) return e.Ips;
-                stale = e;
-            }
-        }
         int start = GoodResolver;
-        for (int k = 0; k < Resolvers.Length; k++)
+        for (int k = 0; k < Math.Min(maxTries, Resolvers.Length); k++)
         {
             int i = (start + k) % Resolvers.Length;
             try
@@ -247,12 +304,75 @@ public static class EmyProxy
                 ttl = Math.Max(60, Math.Min(ttl, 1800));
                 lock (Cache) { Cache[host] = new CacheEntry { Ips = ips, Expires = DateTime.Now.AddSeconds(ttl) }; }
                 if (GoodResolver != i) { GoodResolver = i; Log("DNS saglayici: " + Resolvers[i]); }
+                SaveDns();
                 return ips;
             }
             catch { }
         }
-        if (stale != null) { Log(host + ": DoH cevap vermedi, eski kayit kullaniliyor"); return stale.Ips; }
         return null;
+    }
+
+    static string[] Resolve(string host)
+    {
+        CacheEntry e;
+        lock (Cache)
+        {
+            if (Cache.TryGetValue(host, out e))
+            {
+                if (e.Expires > DateTime.Now) return e.Ips;
+                // suresi dolmus kayit: hemen eski IP ile devam et, arka planda yenile (beklemeden)
+                if (!e.Refreshing)
+                {
+                    e.Refreshing = true;
+                    CacheEntry ce = e;
+                    ThreadPool.QueueUserWorkItem(delegate { if (Lookup(host, Resolvers.Length) == null) ce.Refreshing = false; });
+                }
+                return e.Ips;
+            }
+        }
+        return Lookup(host, 4);
+    }
+
+    // DNS kayitlari diske yazilir: internet yeni geldiginde DoH henuz cevap vermese bile baglanilabilir
+    static DateTime lastDnsSave = DateTime.MinValue;
+    static void SaveDns()
+    {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            lock (Cache)
+            {
+                if ((DateTime.Now - lastDnsSave).TotalSeconds < 20) return;
+                lastDnsSave = DateTime.Now;
+                foreach (KeyValuePair<string, CacheEntry> kv in Cache)
+                    sb.Append(kv.Key).Append(' ').Append(string.Join(",", kv.Value.Ips)).Append("\r\n");
+            }
+            File.WriteAllText(DnsPath, sb.ToString());
+        }
+        catch { }
+    }
+
+    static void LoadDns()
+    {
+        try
+        {
+            if (!File.Exists(DnsPath)) return;
+            foreach (string line in File.ReadAllLines(DnsPath))
+            {
+                string[] p = line.Split(' ');
+                if (p.Length != 2 || !IsAllowed(p[0])) continue;
+                List<string> ips = new List<string>();
+                foreach (string ip in p[1].Split(','))
+                {
+                    IPAddress a;
+                    if (IPAddress.TryParse(ip, out a) && a.AddressFamily == AddressFamily.InterNetwork &&
+                        IsPublic(a.GetAddressBytes()[0], a.GetAddressBytes()[1])) ips.Add(ip);
+                }
+                // suresi dolmus kabul edilir: ilk kullanimda arka planda yenilenir
+                if (ips.Count > 0) Cache[p[0]] = new CacheEntry { Ips = ips.ToArray(), Expires = DateTime.MinValue };
+            }
+        }
+        catch { }
     }
 
     // ---------------- gonderim ----------------
@@ -265,22 +385,35 @@ public static class EmyProxy
         return r;
     }
 
-    static void Send(Stream s, byte[] b, int off, int len) { s.Write(b, off, len); s.Flush(); }
+    static void Send(Socket s, byte[] b, int off, int len)
+    {
+        while (len > 0) { int n = s.Send(b, off, len, SocketFlags.None); off += n; len -= n; }
+    }
 
     // b dizisini "until" konumuna kadar chunk baytlik TCP parcalari, gerisini tek seferde gonder
-    static void SendChunked(Stream s, byte[] b, int until, int chunk)
+    static void SendChunked(Socket s, byte[] b, int until, int chunk, int delayMs)
     {
         until = Math.Min(until, b.Length);
         int i = 0;
-        for (; i < until; i += chunk) { Send(s, b, i, Math.Min(chunk, until - i)); Thread.Sleep(1); }
+        for (; i < until; i += chunk) { Send(s, b, i, Math.Min(chunk, until - i)); Thread.Sleep(delayMs); }
         if (i < b.Length) Send(s, b, i, b.Length - i);
     }
 
-    static void SendHello(Stream ss, string strategy, byte[] hdr, byte[] body, int nameOff, int nameLen)
+    static void SendHello(Socket ss, string strategy, byte[] hdr, byte[] body, int nameOff, int nameLen)
     {
         int recLen = body.Length;
         int a = nameOff + 1;
-        if (strategy == "tlsrec")
+        byte[] all = new byte[5 + recLen];
+        Array.Copy(hdr, all, 5); Array.Copy(body, 0, all, 5, recLen);
+
+        if (strategy == "oob" || strategy == "oob2")
+        {
+            int cut = strategy == "oob" ? 5 + a : 1;
+            Send(ss, all, 0, cut);
+            ss.Send(new byte[] { 0 }, 0, 1, SocketFlags.OutOfBand);   // sunucu tarafinda akistan atilir
+            Send(ss, all, cut, all.Length - cut);
+        }
+        else if (strategy == "tlsrec")
         {
             Send(ss, Record(hdr, body, 0, a), 0, 5 + a);
             Thread.Sleep(5);
@@ -309,129 +442,168 @@ public static class EmyProxy
         {
             byte[] r1 = Record(hdr, body, 0, a);
             byte[] r2 = Record(hdr, body, a, recLen - a);
-            byte[] all = new byte[r1.Length + r2.Length];
-            Array.Copy(r1, all, r1.Length); Array.Copy(r2, 0, all, r1.Length, r2.Length);
+            byte[] two = new byte[r1.Length + r2.Length];
+            Array.Copy(r1, two, r1.Length); Array.Copy(r2, 0, two, r1.Length, r2.Length);
             // ilk kaydin son kismi + SNI'nin tamami 1 baytlik TCP parcalarinda
             int from = Math.Max(0, 5 + a - 8);
-            Send(ss, all, 0, from);
+            Send(ss, two, 0, from);
             Thread.Sleep(2);
-            byte[] rest = new byte[all.Length - from];
-            Array.Copy(all, from, rest, 0, rest.Length);
-            SendChunked(ss, rest, (5 + nameOff + nameLen + 5) - from + 4, 1);
+            byte[] rest = new byte[two.Length - from];
+            Array.Copy(two, from, rest, 0, rest.Length);
+            SendChunked(ss, rest, (5 + nameOff + nameLen + 5) - from + 4, 1, 1);
         }
         else // frag
         {
-            byte[] all = new byte[5 + recLen];
-            Array.Copy(hdr, all, 5); Array.Copy(body, 0, all, 5, recLen);
-            SendChunked(ss, all, 5 + nameOff + nameLen + 4, 2);
+            SendChunked(ss, all, 5 + nameOff + nameLen + 4, 1, 2);
         }
     }
 
-    static TcpClient ConnectWithTimeout(string ip, int ms)
+    static Socket ConnectWithTimeout(string ip, int ms)
     {
-        TcpClient c = new TcpClient();
-        c.NoDelay = true;
-        IAsyncResult ar = c.BeginConnect(ip, 443, null, null);
-        if (!ar.AsyncWaitHandle.WaitOne(ms) || !c.Connected)
-        {
-            try { c.Close(); } catch { }
-            throw new IOException(ip + ":443 baglanti zaman asimi");
-        }
-        c.EndConnect(ar);
-        return c;
-    }
-
-    // Bir yontemle dener; sunucudan ilk cevap gelirse baglantiyi ve ilk veriyi dondurur
-    static TcpClient TryStrategy(string ip, string strategy, byte[] hdr, byte[] body, int nameOff, int nameLen,
-                                 out byte[] first, out int firstLen)
-    {
-        first = null; firstLen = 0;
-        TcpClient server = null;
+        Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        s.NoDelay = true;
         try
         {
-            server = ConnectWithTimeout(ip, TryTimeoutMs);
-            NetworkStream ss = server.GetStream();
-            SendHello(ss, strategy, hdr, body, nameOff, nameLen);
-            ss.ReadTimeout = TryTimeoutMs;
-            byte[] buf = new byte[32 * 1024];
-            int n = ss.Read(buf, 0, buf.Length);
+            IAsyncResult ar = s.BeginConnect(IPAddress.Parse(ip), 443, null, null);
+            if (!ar.AsyncWaitHandle.WaitOne(ms)) throw new IOException("zaman asimi");
+            s.EndConnect(ar);
+            return s;
+        }
+        catch { try { s.Close(); } catch { } return null; }
+    }
+
+    enum TryResult { Ok, NoConnect, Blocked }
+
+    // Bir yontemle dener; sunucudan ilk cevap gelirse baglantiyi ve ilk veriyi dondurur.
+    // NoConnect: sunucuya hic ulasilamadi (internet / IP sorunu). Blocked: baglanti kuruldu ama cevap yok (DPI).
+    static TryResult TryStrategy(string ip, string strategy, byte[] hdr, byte[] body, int nameOff, int nameLen,
+                                 out Socket server, out byte[] first, out int firstLen)
+    {
+        first = null; firstLen = 0;
+        server = ConnectWithTimeout(ip, ConnectTimeoutMs);
+        if (server == null) return TryResult.NoConnect;
+        try
+        {
+            SendHello(server, strategy, hdr, body, nameOff, nameLen);
+            server.ReceiveTimeout = ReplyTimeoutMs;
+            byte[] buf = new byte[64 * 1024];
+            int n = server.Receive(buf);
             if (n <= 0) throw new IOException("sunucu baglantiyi kapatti");
-            ss.ReadTimeout = Timeout.Infinite;
+            server.ReceiveTimeout = 0;
             first = buf; firstLen = n;
-            return server;
+            return TryResult.Ok;
         }
         catch
         {
-            try { if (server != null) server.Close(); } catch { }
-            return null;
+            try { server.Close(); } catch { }
+            server = null;
+            return TryResult.Blocked;
         }
+    }
+
+    static List<int> BuildOrder(string host)
+    {
+        List<int> order = new List<int>();
+        if (Mode != "auto")
+        {
+            int i = Array.IndexOf(Strategies, Mode);
+            order.Add(i < 0 ? 0 : i);
+            return order;
+        }
+        lock (HostLearned)
+        {
+            // ogrenilen yontem en hizlisi degilse ara sira en hizlisini tekrar dene (DPI degismis olabilir)
+            if (DateTime.Now >= ReprobeAt) { order.Add(0); ReprobeAt = DateTime.Now.AddMinutes(10); }
+            int h;
+            if (HostLearned.TryGetValue(host, out h) && !order.Contains(h)) order.Add(h);
+        }
+        if (!order.Contains(Learned)) order.Add(Learned);
+        for (int i = 0; i < Strategies.Length; i++) if (!order.Contains(i)) order.Add(i);
+        return order;
     }
 
     static void Handle(object o)
     {
         TcpClient client = (TcpClient)o;
-        TcpClient server = null;
+        Socket server = null;
         string host = "?";
         try
         {
             client.NoDelay = true;
+            client.ReceiveTimeout = 10000;
             NetworkStream cs = client.GetStream();
             byte[] hdr = new byte[5];
             if (!ReadExact(cs, hdr, 0, 5) || hdr[0] != 0x16) { client.Close(); return; }
             int recLen = (hdr[3] << 8) | hdr[4];
+            if (recLen < 40 || recLen > 16384 + 2048) { client.Close(); return; }
             byte[] body = new byte[recLen];
             if (!ReadExact(cs, body, 0, recLen)) { client.Close(); return; }
+            client.ReceiveTimeout = 0;
 
             int nameOff, nameLen;
             host = ParseSni(body, out nameOff, out nameLen);
             if (host == null) { Log("SNI bulunamadi, baglanti kapatildi"); client.Close(); return; }
+            if (!IsAllowed(host)) { Log(host + ": Discord/Roblox adresi degil, reddedildi"); client.Close(); return; }
 
             string[] ips = Resolve(host);
-            if (ips == null || ips.Length == 0) { Log(host + " cozulemedi (DoH)"); client.Close(); return; }
+            if (ips == null || ips.Length == 0) { Log(host + " cozulemedi (DoH) - internet baglantisi var mi?"); client.Close(); return; }
 
-            // denenecek yontem sirasi
-            List<int> order = new List<int>();
-            if (Mode == "auto")
-            {
-                int h;
-                lock (HostLearned) { if (HostLearned.TryGetValue(host, out h)) order.Add(h); }
-                if (!order.Contains(Learned)) order.Add(Learned);
-                for (int i = 0; i < Strategies.Length; i++) if (!order.Contains(i)) order.Add(i);
-            }
-            else
-            {
-                int i = Array.IndexOf(Strategies, Mode);
-                order.Add(i < 0 ? 0 : i);
-            }
-
+            List<int> order = BuildOrder(host);
             byte[] first = null; int firstLen = 0;
             string usedIp = null; int used = -1;
-            for (int k = 0; k < order.Count && server == null; k++)
+            int ipIdx = 0, noConnect = 0;
+            bool relooked = false;
+            List<int> blocked = new List<int>();
+            for (int k = 0; k < order.Count && server == null; )
             {
-                // her denemede farkli IP (varsa) - tek bir sunucu sorunlu olabilir
-                string ip = ips[k % ips.Length];
-                server = TryStrategy(ip, Strategies[order[k]], hdr, body, nameOff, nameLen, out first, out firstLen);
-                if (server != null) { usedIp = ip; used = order[k]; }
-                else if (Mode == "auto") Log(host + ": " + Strategies[order[k]] + " yontemi cevap almadi, sonraki deneniyor");
+                if (noConnect >= Math.Min(ips.Length, 3))
+                {
+                    // kayitli IP'lere ulasilamadi: IP degismis olabilir, bir kez taze DNS sorgusuyla tekrar dene
+                    if (relooked) break;
+                    relooked = true;
+                    string[] fresh = Lookup(host, 3);
+                    if (fresh == null || string.Join(",", fresh) == string.Join(",", ips)) break;
+                    ips = fresh; ipIdx = 0; noConnect = 0;
+                }
+                string ip = ips[ipIdx % ips.Length];
+                TryResult r = TryStrategy(ip, Strategies[order[k]], hdr, body, nameOff, nameLen, out server, out first, out firstLen);
+                if (r == TryResult.Ok) { usedIp = ip; used = order[k]; break; }
+                if (r == TryResult.NoConnect)
+                {
+                    // yontem sorunu degil: ayni yontemle baska IP dene, hicbirine ulasilamiyorsa vazgec
+                    ipIdx++; noConnect++;
+                    continue;
+                }
+                blocked.Add(order[k]);
+                if (Mode == "auto") Log(host + ": " + Strategies[order[k]] + " cevap almadi, sonraki deneniyor");
+                k++;
             }
             if (server == null)
             {
-                Log(host + " baglanamadi (" + (Mode == "auto" ? "tum yontemler denendi" : "mod=" + Mode) + ")");
+                if (blocked.Count == 0) Log(host + ": sunucuya ulasilamadi (internet baglantisi kesik olabilir)");
+                else Log(host + " baglanamadi (" + (Mode == "auto" ? "denenen yontemler cevap almadi" : "mod=" + Mode) + ")");
                 client.Close();
                 return;
             }
             if (Mode == "auto")
             {
-                lock (HostLearned) { HostLearned[host] = used; }
-                // genel yontem denenip basarisiz olduysa yenisini genel yontem yap
-                int li = order.IndexOf(Learned), ui = order.IndexOf(used);
-                if (li >= 0 && li < ui) SaveLearned(used);
+                lock (HostLearned)
+                {
+                    HostLearned[host] = used;
+                    FailStreak[used] = 0;
+                    foreach (int b in blocked) FailStreak[b]++;
+                }
+                // genel yontem birden fazla kez DPI tarafindan engellendiyse ya da daha hizli bir yontem
+                // tekrar calismaya basladiysa genel yontemi degistir
+                if (used < Learned || (blocked.Contains(Learned) && FailStreak[Learned] >= 2)) SaveLearned(used);
             }
 
             Log(host + " -> " + usedIp + (Mode == "auto" ? " [" + Strategies[used] + "]" : ""));
-            NetworkStream ss = server.GetStream();
+            server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+            NetworkStream ss = new NetworkStream(server, true);
             cs.Write(first, 0, firstLen);
-            TcpClient srv = server;
+            Socket srv = server;
             Thread up = new Thread(delegate () { Pump(cs, ss, client, srv); });
             up.IsBackground = true;
             up.Start();
@@ -445,9 +617,9 @@ public static class EmyProxy
         }
     }
 
-    static void Pump(Stream from, Stream to, TcpClient a, TcpClient b)
+    static void Pump(Stream from, Stream to, TcpClient a, Socket b)
     {
-        byte[] buf = new byte[32 * 1024];
+        byte[] buf = new byte[64 * 1024];
         try
         {
             int n;

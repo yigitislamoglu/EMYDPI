@@ -3,7 +3,7 @@
 param([switch]$NoElevate)
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.3.0'
+$Version = '1.4.0'
 $Dir     = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Main    = Join-Path $Dir 'emydpi.ps1'
 $LogFile = Join-Path $Dir 'emydpi.log'
@@ -201,9 +201,11 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
           <TextBlock Text="ATLATMA YÖNTEMİ" Style="{StaticResource Label}"/>
           <WrapPanel x:Name="ModePanel">
             <RadioButton x:Name="RbAuto"    GroupName="m" Tag="auto"    Content="Otomatik" Style="{StaticResource Pill}" IsChecked="True" Margin="0,0,8,8"/>
+            <RadioButton x:Name="RbOob"     GroupName="m" Tag="oob"     Content="oob"     Style="{StaticResource Pill}" Margin="0,0,8,8"/>
+            <RadioButton x:Name="RbOob2"    GroupName="m" Tag="oob2"    Content="oob2"    Style="{StaticResource Pill}" Margin="0,0,8,8"/>
             <RadioButton x:Name="RbTlsrec"  GroupName="m" Tag="tlsrec"  Content="tlsrec"  Style="{StaticResource Pill}" Margin="0,0,8,8"/>
-            <RadioButton x:Name="RbMulti"   GroupName="m" Tag="multi"   Content="multi"   Style="{StaticResource Pill}" Margin="0,0,8,8"/>
             <RadioButton x:Name="RbRecfrag" GroupName="m" Tag="recfrag" Content="recfrag" Style="{StaticResource Pill}" Margin="0,0,8,8"/>
+            <RadioButton x:Name="RbMulti"   GroupName="m" Tag="multi"   Content="multi"   Style="{StaticResource Pill}" Margin="0,0,8,8"/>
             <RadioButton x:Name="RbFrag"    GroupName="m" Tag="frag"    Content="frag"    Style="{StaticResource Pill}" Margin="0,0,8,8"/>
           </WrapPanel>
           <TextBlock Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,12"
@@ -328,7 +330,7 @@ function Set-Busy([bool]$busy, [string]$title) {
 # ---------------- durum ----------------
 $script:status = $null
 $script:firstStatus = $true
-$ModeNames = @{ auto = 'Otomatik'; tlsrec = 'tlsrec'; multi = 'multi'; recfrag = 'recfrag'; frag = 'frag' }
+$ModeNames = @{ auto = 'Otomatik'; oob = 'oob'; oob2 = 'oob2'; tlsrec = 'tlsrec'; recfrag = 'recfrag'; multi = 'multi'; frag = 'frag' }
 
 function Show-Status($s) {
     $script:status = $s

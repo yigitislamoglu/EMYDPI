@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set "VER=1.3.0"
+set "VER=1.4.0"
 title EMYDPI v%VER% - Discord + Roblox
 cd /d "%~dp0"
 
@@ -81,17 +81,21 @@ echo.
 echo   Otomatik mod internet saglayiciniza uyan yontemi kendisi bulur.
 echo   Elle secmek sadece sorun giderme icindir.
 echo   [1] Otomatik        (onerilen)
-echo   [2] tlsrec          (en hizli)
-echo   [3] multi
-echo   [4] recfrag
-echo   [5] frag            (en yavas)
+echo   [2] oob             (en hizli)
+echo   [3] oob2
+echo   [4] tlsrec
+echo   [5] recfrag
+echo   [6] multi
+echo   [7] frag            (en yavas)
 echo   [0] Geri
 echo.
 set "ym="
 set /p "ym=Seciminiz: "
 if "%ym%"=="1" ( %PS% -Action install -Mode auto    & pause & goto menu )
-if "%ym%"=="2" ( %PS% -Action install -Mode tlsrec  & pause & goto menu )
-if "%ym%"=="3" ( %PS% -Action install -Mode multi   & pause & goto menu )
-if "%ym%"=="4" ( %PS% -Action install -Mode recfrag & pause & goto menu )
-if "%ym%"=="5" ( %PS% -Action install -Mode frag    & pause & goto menu )
+if "%ym%"=="2" ( %PS% -Action install -Mode oob     & pause & goto menu )
+if "%ym%"=="3" ( %PS% -Action install -Mode oob2    & pause & goto menu )
+if "%ym%"=="4" ( %PS% -Action install -Mode tlsrec  & pause & goto menu )
+if "%ym%"=="5" ( %PS% -Action install -Mode recfrag & pause & goto menu )
+if "%ym%"=="6" ( %PS% -Action install -Mode multi   & pause & goto menu )
+if "%ym%"=="7" ( %PS% -Action install -Mode frag    & pause & goto menu )
 goto menu

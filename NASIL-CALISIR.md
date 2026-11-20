@@ -64,31 +64,47 @@ Bu yöntem testlerde **~250 ms**'de bağlantı kurdu. Bu, normal bir bağlantıy
 ### Farklı operatörler: otomatik mod
 
 Her operatör farklı bir DPI cihazı kullanabilir. Bazıları sadece ilk paketi okur, bazıları TLS kayıtlarını
-birleştirip okur, bazıları TCP paketlerini de birleştirir. Bu yüzden EMYDPI'de 4 yöntem vardır:
+birleştirip okur, bazıları TCP paketlerini de birleştirir. Bu yüzden EMYDPI'de 6 yöntem vardır:
 
 | Yöntem | Paket nasıl gönderilir | Hangi DPI'ya karşı |
 |---|---|---|
+| `oob` | `…d` + **1 bayt TCP acil verisi** + `iscord.com…` | Paketleri birleştirip okuyan DPI dahil |
+| `oob2` | Paketin 1. baytından sonra acil veri | Aynı, farklı konum |
 | `tlsrec` | 2 TLS kaydı: `…d` + `iscord.com…` | Sadece tek kaydı okuyan DPI |
-| `multi` | Alan adı 3'er harflik kayıtlara: `…d` `isc` `ord` `.co` `m` `…` | İki kaydı birleştirebilen DPI |
 | `recfrag` | `tlsrec` + alan adı bölümü 1 baytlık TCP paketleri | TLS kayıtlarını birleştiren ama TCP'yi birleştirmeyen DPI |
-| `frag` | Paketin başı 2 baytlık TCP parçaları | Sadece ilk TCP paketine bakan DPI |
+| `multi` | Alan adı 3'er harflik kayıtlara: `…d` `isc` `ord` `.co` `m` `…` | İki kaydı birleştirebilen DPI |
+| `frag` | Paketin başı 1 baytlık TCP parçaları | Sadece ilk TCP paketine bakan DPI |
+
+**`oob` nasıl çalışır?** TCP'nin eski bir özelliği olan "acil veri" (URG bayrağı) ile, alan adının ortasına
+akışın dışında sayılan 1 bayt eklenir. Discord ve Roblox sunucuları bu baytı standart gereği akıştan çıkarır ve
+ClientHello'yu bozulmadan alır. DPI cihazı ise baytı akışın parçası sayar ve alan adını `d?iscord.com` gibi
+yanlış birleştirir. Kasım 2026'da test edilen operatörde `tlsrec`, `multi` ve `recfrag` engellenmeye başladığında `oob`
+11 farklı Discord/Roblox adresinde 96/96 denemede, ~0,25 saniyede bağlandı.
 
 **Otomatik mod** (varsayılan) şöyle çalışır:
 
-1. Proxy önce daha önce işe yaramış yöntemi dener (ilk kurulumda `tlsrec`).
-2. Sunucudan 4 saniye içinde cevap gelmezse veya bağlantı kesilirse aynı ClientHello'yu **yeni bir bağlantıda bir
-   sonraki yöntemle** tekrar gönderir. Uygulamaya henüz hiçbir şey gönderilmediği için bu güvenlidir; Discord veya
-   Roblox sadece biraz daha uzun bekler.
-3. İşe yarayan yöntem `emydpi-strategy.txt` dosyasına kaydedilir. Sonraki bağlantılar ve bilgisayar açılışları
-   doğrudan onu kullanır, yani bekleme sadece **ilk seferde bir kez** olur.
-4. Operatör ileride yöntemini değiştirirse aynı süreç tekrarlanır ve yeni yöntem öğrenilir.
+1. Proxy önce daha önce işe yaramış yöntemi dener (ilk kurulumda `oob`).
+2. Bağlantı kuruldu ama sunucudan 3 saniye içinde cevap gelmezse (DPI engeli) aynı ClientHello'yu **yeni bir
+   bağlantıda bir sonraki yöntemle** tekrar gönderir. Uygulamaya henüz hiçbir şey gönderilmediği için bu
+   güvenlidir; Discord veya Roblox sadece biraz daha uzun bekler.
+3. Bir yöntem en az iki kez engellenirse, işe yarayan yöntem `emydpi-strategy.txt` dosyasına kaydedilir.
+   Sonraki bağlantılar ve bilgisayar açılışları doğrudan onu kullanır.
+4. Öğrenilen yöntem en hızlısı değilse proxy 10 dakikada bir en hızlısını tekrar dener; operatör engeli
+   kaldırdıysa hızlı yönteme geri döner.
 
-Testte ilk yöntemi bilerek engelli bir yönteme ayarladık: ilk bağlantı 4,7 saniyede kuruldu, `tlsrec` öğrenildi ve
-sonraki bağlantılar yine ~0,3 saniyede kuruldu.
+**İnternet kesintisi DPI ile karıştırılmaz.** Sunucuya TCP bağlantısı hiç kurulamıyorsa sorun yöntemde değil
+ağdadır. Bu durumda proxy yöntem değiştirmez. Önce sunucunun diğer IP'lerini, sonra taze bir DNS sorgusunu dener ve
+olmazsa 3 saniyede vazgeçer. (v1.3.0'a kadar kesinti sırasında tüm yöntemler sırayla denenip "başarısız" sayılıyor,
+proxy en yavaş yöntem olan `frag`'a kayıyordu.) Wi-Fi değişimi, modem yeniden başlaması gibi ağ değişiklikleri
+algılanır ve öğrenilenler sıfırlanır.
 
 Şifreli DNS de aynı mantıkla yedeklidir: Cloudflare (`1.1.1.1`, `1.0.0.1`), Google (`8.8.8.8`, `8.8.4.4`) ve
-AdGuard (`94.140.14.140`, `94.140.14.141`). Biri cevap vermezse sıradakine geçilir. Hepsi aynı anda erişilemezse
-son bilinen IP kullanılır.
+AdGuard (`94.140.14.140`, `94.140.14.141`). Biri cevap vermezse sıradakine geçilir. Bulunan IP'ler
+`emydpi-dns.txt` dosyasına da yazılır. Kaydın süresi dolmuşsa proxy beklemeden eski IP ile bağlanır ve kaydı arka
+planda yeniler. Böylece internet yeni geldiğinde veya bilgisayar açılırken DNS beklenmez.
+
+**Güvenlik:** Proxy sadece Discord ve Roblox alan adlarına aracılık eder, başka bir adres gelirse reddeder.
+DNS cevabında yerel/özel ağ adresi (`10.x`, `192.168.x`, `127.x` vb.) gelirse kabul etmez.
 
 ### Neden diğer DPI araçlarıyla birlikte çalışmaz?
 
@@ -135,10 +151,10 @@ Discord açılıp `gateway.discord.gg` adresine bağlanmak istediğinde:
 Proxy logunda (arayüzde *Gelişmiş ayarlar* → `Logu göster`) bu şöyle görünür:
 
 ```
-14:32:31 EMYDPI proxy calisiyor: 127.0.0.1:443 mod=auto (ogrenilen yontem: tlsrec)
-14:32:34 updates.discord.com -> 162.159.136.232 [tlsrec]
-14:32:35 gateway.discord.gg -> 162.159.130.234 [tlsrec]
-14:32:37 cdn.discordapp.com -> 162.159.135.233 [tlsrec]
+14:14:25 EMYDPI proxy calisiyor: 127.0.0.1:443 mod=auto (ogrenilen yontem: oob)
+14:14:31 discord.com -> 162.159.137.232 [oob]
+14:14:31 cdn.discordapp.com -> 162.159.135.233 [oob]
+14:14:32 gateway.discord.gg -> 162.159.135.234 [oob]
 ```
 
 > **Neden sertifika hatası olmuyor?** Proxy TLS'i sonlandırmaz, yani araya girip kendi sertifikasını sunmaz.

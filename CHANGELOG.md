@@ -1,5 +1,26 @@
 # Değişiklik Günlüğü
 
+## [1.4.0] - 2026-11-20
+
+### Yeni
+- ⚡ **`oob` yöntemi (yeni varsayılan):** Alan adının ortasına TCP acil verisi (OOB) ile 1 bayt eklenir; sunucu
+  baytı atar, DPI alan adını yanlış okur. Test edilen operatörde `tlsrec`, `multi` ve `recfrag` engellenince
+  96/96 denemede ~0,25 saniyede bağlandı. Yedek olarak `oob2` da eklendi.
+- 🔌 **İnternet gidip gelince otomatik toparlanma:** Sunucuya hiç ulaşılamıyorsa bu internet kesintisi sayılır,
+  yöntem değiştirilmez. Kayıtlı IP'ler çalışmazsa taze DNS sorgusuyla hemen tekrar denenir. Wi-Fi/modem
+  değişikliği algılanır ve en hızlı yöntem tekrar denenir.
+- DNS kayıtları diske yazılır. Süresi dolan kayıt beklemeden kullanılır ve arka planda yenilenir.
+- 🔒 Proxy sadece Discord ve Roblox adreslerine aracılık eder. Yerel/özel ağ adresi dönen DNS cevapları reddedilir.
+
+### Düzeltilenler
+- **Yavaşlama:** İnternet kesintisi sırasında tüm yöntemler başarısız sayılıyor ve proxy en yavaş yöntem `frag`'a
+  geçip öyle kalıyordu. Artık bir yöntem en az iki kez gerçekten engellenmeden değiştirilmez. Daha yavaş bir
+  yöntem öğrenildiyse 10 dakikada bir en hızlısı tekrar denenir.
+- **Resim / dosya gönderememe:** Discord'un yükleme sunucusu (`storage.googleapis.com`) engelli olmadığı halde
+  proxy'den geçiyordu ve kesintilerde yüklemeler düşüyordu. Artık doğrudan gider.
+- Bağlantı başına bekleme 16 saniyeden en fazla ~6 saniyeye indi (cevap bekleme 4 → 3 sn, DNS 3 → 2,5 sn).
+- Proxy çökerse veya 443 portu geçici olarak meşgulse kendini yeniden başlatır.
+
 ## [1.3.0] - 2026-11-07
 
 ### Yeni
@@ -54,6 +75,7 @@
 - Tek menülü `.bat`: kur, kaldır, başlat, durdur, log.
 - Antivirüs `hosts` dosyasını koruyorsa anlaşılır hata mesajı verir; `hosts` zaten doğruysa dosyaya dokunmaz.
 
+[1.4.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.4.0
 [1.3.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.3.0
 [1.2.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.2.0
 [1.1.0]: https://github.com/yigitislamoglu/EMYDPI/releases/tag/v1.1.0

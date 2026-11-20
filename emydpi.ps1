@@ -1,4 +1,4 @@
-# EMYDPI v1.3.0 - Discord ve Roblox icin DPI/DNS atlatma
+# EMYDPI v1.4.0 - Discord ve Roblox icin DPI/DNS atlatma
 # https://github.com/yigitislamoglu/EMYDPI  (MIT)
 # 1) hosts: secilen servislerin alan adlari -> 127.0.0.1
 # 2) emydpi-proxy: 127.0.0.1:443'te dinler, gercek IP'yi DoH ile bulur,
@@ -8,7 +8,7 @@ param(
     [ValidateSet('install', 'uninstall', 'start', 'stop', 'status', 'statusjson', 'log')]
     [string]$Action = 'status',
     # auto: internet saglayicisina uygun bolme yontemini kendisi bulur. Digerleri tek yontemi zorlar.
-    [ValidateSet('auto', 'tlsrec', 'multi', 'recfrag', 'frag')]
+    [ValidateSet('auto', 'oob', 'oob2', 'tlsrec', 'recfrag', 'multi', 'frag')]
     [string]$Mode = 'auto',
     # Virgulle ayrilmis: Discord,Roblox. Bos birakilirsa mevcut kurulum (yoksa hepsi) kullanilir.
     [string]$Services = '',
@@ -38,7 +38,8 @@ $ServiceDomains = [ordered]@{
         'discordapp.com', 'www.discordapp.com', 'cdn.discordapp.com',
         'dl.discordapp.net', 'media.discordapp.net',
         'images-ext-1.discordapp.net', 'images-ext-2.discordapp.net',
-        'discordcdn.com', 'discord-attachments-uploads-prd.storage.googleapis.com'
+        'discordcdn.com'
+        # Resim/dosya yukleme sunucusu (storage.googleapis.com) engelli degil: dogrudan gider, daha hizli
     )
     # rbxcdn.com engelli degil, eklenmedi. Oyun sunuculari (UDP) IP ile baglanir, engelli degil.
     Roblox = @('roblox.com', 'ro.blox.com') + (@(
@@ -151,7 +152,7 @@ function Register-Task {
     $trigger   = New-ScheduledTaskTrigger -AtLogOn -User $user
     $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
     $settings  = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries `
-                   -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
+                   -DontStopIfGoingOnBatteries -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal `
         -Settings $settings -Description 'EMYDPI - Discord/Roblox DPI atlatma proxy' -Force | Out-Null
     Write-Host '[+] Oturum acilisinda otomatik baslatma ayarlandi.' -ForegroundColor Green
@@ -308,7 +309,7 @@ switch ($Action) {
         Stop-Proxy
         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
         if (Hosts-Active) { Write-Hosts (Remove-Block (Read-Hosts)) }
-        Remove-Item $StateFile -ErrorAction SilentlyContinue
+        Remove-Item $StateFile, (Join-Path $Dir 'emydpi-dns.txt') -ErrorAction SilentlyContinue
         ipconfig /flushdns | Out-Null
         Write-Host '[+] EMYDPI tamamen kaldirildi (proxy, otomatik baslatma, hosts kayitlari).' -ForegroundColor Green
     }
@@ -342,7 +343,7 @@ switch ($Action) {
         $taskMode = ''
         if ($task) { $mm = [regex]::Match([string]$task.Actions[0].Arguments, '-Mode (\w+)'); if ($mm.Success) { $taskMode = $mm.Groups[1].Value } }
         $learned = ''
-        if (Test-Path $StateFile) { $learned = ([IO.File]::ReadAllText($StateFile)).Trim() }
+        if (Test-Path $StateFile) { $learned = ([IO.File]::ReadAllText($StateFile)).Trim() -replace '^v\d+:', '' }
         [pscustomobject]@{
             services  = @(Get-InstalledServices)
             hosts     = [bool](Hosts-Active)

@@ -34,7 +34,7 @@ Sadece seçtiğin servislerin trafiğini etkiler; diğer sitelere, DNS ayarları
 | 🎯 **Sadece seçtiğin servisler** | Yalnızca o servislerin alan adları yönlendirilir, geri kalan her şey normal yolundan gider. |
 | 🛡️ **Uygulamalara dokunmaz** | DLL enjekte etmez, Discord'un veya Roblox'un dosyalarını değiştirmez. Güncellemeler sorun çıkarmaz. |
 | ⚡ **Kur ve unut** | Bilgisayar her açıldığında arka planda, pencere açmadan kendiliğinden çalışır. |
-| 🌐 **Her operatöre uyum** | Türk Telekom, Superonline, Vodafone, TurkNet… Her operatörün DPI'ı farklı davranabilir. EMYDPI 4 farklı yöntemi sırayla dener, senin hattında işe yarayanı kendisi bulur ve hatırlar. |
+| 🌐 **Her operatöre uyum** | Türk Telekom, Superonline, Vodafone, TurkNet… Her operatörün DPI'ı farklı davranabilir. EMYDPI 6 farklı yöntemi sırayla dener, senin hattında işe yarayanı kendisi bulur ve hatırlar. |
 
 ## 🚀 Kurulum
 
@@ -132,13 +132,18 @@ EMYDPI şöyle aşar:
 4. **Otomatik mod:** Operatörlerin DPI cihazları farklıdır. Bir yöntem cevap almazsa proxy aynı bağlantıyı bir
    sonraki yöntemle tekrar dener. İşe yarayanı kaydeder; sonraki bağlantılar ve bilgisayar açılışları doğrudan onu
    kullanır. Operatörün davranışı değişirse yeniden öğrenir.
+5. **İnternet gidip gelince:** Sunucuya hiç ulaşılamıyorsa bu bir DPI engeli değil, internet kesintisidir. Proxy
+   yöntemi değiştirmez, 3 saniyede vazgeçer ve internet geri gelince kaldığı yerden devam eder. Wi-Fi veya modem
+   değiştiğinde ağ değişikliğini algılar ve en hızlı yöntemi tekrar dener.
 
 | Yöntem | Ne yapar | Hız |
 |---|---|---|
-| `tlsrec` | ClientHello'yu alan adının 1. harfinden **iki TLS kaydına** böler | En hızlı |
-| `multi` | Alan adını **3'er harflik çok sayıda TLS kaydına** böler | Hızlı |
+| `oob` | Alan adının 1. harfinden sonra 1 baytlık TCP **acil verisi** (OOB) gönderir. Sunucu bu baytı atar, DPI akışı yanlış birleştirir | En hızlı, en güçlü |
+| `oob2` | Aynısı, acil bayt paketin en başında | En hızlı |
+| `tlsrec` | ClientHello'yu alan adının 1. harfinden **iki TLS kaydına** böler | Hızlı |
 | `recfrag` | `tlsrec` + alan adı bölümünü **1 baytlık TCP paketleriyle** gönderir | Orta |
-| `frag` | Paketin başını **2 baytlık TCP parçalarıyla** gönderir | Yavaş, son çare |
+| `multi` | Alan adını **3'er harflik çok sayıda TLS kaydına** böler | Orta |
+| `frag` | Paketin başını **1 baytlık TCP parçalarıyla** gönderir | Yavaş, son çare |
 
 Şifreli trafik **çözülmez veya değiştirilmez**; proxy sadece ilk paketi böler, gerisini olduğu gibi aktarır.
 Bu yüzden sertifika kurulumu da gerekmez.
@@ -244,7 +249,7 @@ Get-FileHash .\EMYDPI.zip -Algorithm SHA256
 
 1. Durum kartında **"Çakışan program çalışıyor"** uyarısı var mı bak. Varsa o programı kaldır (yukarıdaki
    Kurulum uyarısına bak) ve `Kur / Onar`'a tekrar bas.
-2. *Gelişmiş ayarlar* → `Logu göster`'e bas. `discord.com -> ... [tlsrec]` gibi satırlar görünüyorsa proxy çalışıyordur.
+2. *Gelişmiş ayarlar* → `Logu göster`'e bas. `discord.com -> ... [oob]` gibi satırlar görünüyorsa proxy çalışıyordur.
    Hiç satır yoksa `Başlat`'a basmayı dene.
 3. Logda `tum yontemler denendi` yazıyorsa operatörün henüz desteklenmeyen bir yöntem kullanıyor olabilir.
    Lütfen operatörünün adıyla birlikte bir [Issue](https://github.com/yigitislamoglu/EMYDPI/issues) aç.
